@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/Dream_Guardian/static/js/main.d3d54910.js",
-    "index.html": "/Dream_Guardian/index.html",
-    "main.d3d54910.js.map": "/Dream_Guardian/static/js/main.d3d54910.js.map"
+    "main.js": "/static/js/main.bd8b17ba.js",
+    "index.html": "/index.html",
+    "main.bd8b17ba.js.map": "/static/js/main.bd8b17ba.js.map"
   },
   "entrypoints": [
-    "static/js/main.d3d54910.js"
+    "static/js/main.bd8b17ba.js"
   ]
 }

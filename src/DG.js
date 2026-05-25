@@ -11,6 +11,7 @@ const DAY_START_MIN = 360;
 const NIGHT_START_MIN = 1200;
 const TOTAL_MINS = 1440;
 const SAVE_KEY = "dreamguardian_save";
+const ROOT_BG = "linear-gradient(to bottom, #090014, #140026, #090014)";
 
 const getMoodTier = (pts) => (pts >= 1001 ? 3 : pts >= 501 ? 2 : 1);
 
@@ -256,7 +257,9 @@ const STORY_ACTS = [
   {
     id: "epilogue",
     title: "Epilogue: The Morning After",
-    isEnd: true,
+    isEnd: true
+  }
+];
     pages: [
       {
         heading: "Epilogue: The Morning After",
@@ -1493,19 +1496,14 @@ function StoryScreen({ act, pageIdx, onNext, onFinish, isPrologue }) {
   const page = act.pages[pageIdx],
     isLast = pageIdx === act.pages.length - 1;
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: ROOT_BG,
-        color: "#ddd6fe",
-        fontFamily: FONT,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px",
-        boxSizing: "border-box",
-      }}
-    >
+  <div style={{
+    minHeight: "100dvh",
+    background: ROOT_BG, // This connects to the constant we just added
+    color: "#ddd6fe",
+    fontFamily: "sans-serif",
+    padding: 16,
+    boxSizing: "border-box",
+  }}>
       <div
         style={{
           ...S.card("rgba(139,92,246,0.4)", "rgba(8,0,20,0.99)"),
@@ -1884,6 +1882,29 @@ function UpgradeModal({
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════
 export default function DreamGuardian() {
+  // Calculate bonuses using the function from your constants
+  const bonusAtk = computeBonus(FERAL_BRANCHES, game.feralLevels, "atk");
+  const bonusMatk = computeBonus(HYBRID_BRANCHES, game.hybridLevels, "matk");
+  const bonusMaxHp = computeBonus(FERAL_BRANCHES, game.feralLevels, "maxHp");
+  const bonusMaxMp = computeBonus(HYBRID_BRANCHES, game.hybridLevels, "maxMp");
+
+  // Final Stats used for UI and Combat
+  const totalMaxHp = BASE_HP + bonusMaxHp;
+  {/* HP BAR */}
+<StatBar 
+  value={game.player.hp} 
+  max={totalMaxHp} // Now dynamic!
+  color="#ef4444" 
+/>
+  const totalMaxMp = BASE_MP + bonusMaxMp;
+  {/* MP BAR */}
+<StatBar 
+  value={game.player.mp} 
+  max={totalMaxMp} // Now dynamic!
+  color="#8b5cf6" 
+/>
+  const totalAtk = 10 + bonusAtk; // 10 is base starting atk
+  const totalMatk = 10 + bonusMatk;
   // ── Screen ────────────────────────────────────────────────
   const [screen, setScreen] = useState("title"); // title | prologue | main | battle | cutscene | ending
   const [storyPageIdx, setStoryPageIdx] = useState(0);

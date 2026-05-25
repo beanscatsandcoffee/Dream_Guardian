@@ -1,5 +1,6 @@
 {
   "name": "dream-guardian",
+  "homepage": "https://beanscatsandcoffee.github.io/Dream_Guardian",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
@@ -10,7 +11,9 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test"
+    "test": "react-scripts test",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "browserslist": {
     "production": [
@@ -23,5 +26,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }

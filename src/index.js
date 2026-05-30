@@ -1,15 +1,7 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
-
-// Add this block below to register the service worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(reg => console.log('Service Worker registered! ✅', reg))
-      .catch(err => console.log('Service Worker failed ❌', err));
-  });
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }

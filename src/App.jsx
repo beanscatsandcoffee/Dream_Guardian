@@ -67,7 +67,7 @@ const defaultState = {
   mood: 1001, bond: 0,
   player: defaultPlayer,
   inventory: [],
-  equipped: { weapon: null, accessory: null, aura: null },
+  equipped: { weapon: null, accessory: null, aura: null, body_armor: null, paw_gloves: null, tail_enhancements: null, head_gear: null },
   toast: "",
   dailyMouseItems: [],
   dailyMappyItems: [],
@@ -79,6 +79,10 @@ const defaultState = {
   talkedToday: false,
   scavengedToday: false,
   totalBattlesCount: 0,
+  rerollCountToday: 0,
+  battleHistory: [],
+  lastActShown: 0,
+  neuralMissionActive: null,
 };
 
 // ── Item Pools ───────────────────────────────────────────────────────
@@ -97,6 +101,22 @@ const MOUSE_ITEMS_POOL = [
   { id:"dream_aura",     name:"Dream Aura",      ico:"🌀", type:"equipment",  slot:"aura",      price:130, desc:"+5 ATK +15 Max MP",   effect:{ atk:5, maxMp:15 } },
   { id:"spirit_cloak",   name:"Spirit Cloak",    ico:"👘", type:"equipment",  slot:"aura",      price:95,  desc:"+20 Max HP",          effect:{ maxHp:20 } },
   { id:"twilight_ring",  name:"Twilight Ring",   ico:"🌙", type:"equipment",  slot:"accessory", price:85,  desc:"+25 Max MP",          effect:{ maxMp:25 } },
+  
+  // Body Armor
+  { id:"architecture",   name:"Architecture",    ico:"🛡️", type:"equipment",  slot:"body_armor", price:140, desc:"DR +5% & +2% Dream Essence drops per star. Reduces debuff impact by 5%", effect:{ dr:5, maxHp:15 } },
+  { id:"synapse",        name:"Synapse",         ico:"🧠", type:"equipment",  slot:"body_armor", price:210, desc:"DR +8%. Converts 1% of blocked damage into Speed inside battles", effect:{ dr:8, atk:2 } },
+  
+  // Paw Gloves
+  { id:"spindle",        name:"Spindle",         ico:"🐾", type:"equipment",  slot:"paw_gloves", price:120, desc:"Attack Speed +8%, Multi-Strike rate +2% per star", effect:{ atk:3, maxHp:10 } },
+  { id:"synesthesia",    name:"Synesthesia",     ico:"🎨", type:"equipment",  slot:"paw_gloves", price:190, desc:"Armor Pen +5%. Unlocks 30% Blind chance on enemy at 2 stars", effect:{ atk:5, maxMp:10 } },
+
+  // Tail Enhancements
+  { id:"continuum",      name:"Continuum",       ico:"🧬", type:"equipment",  slot:"tail_enhancements", price:155, desc:"Every 5th attack cleaves next 3 enemies in queue for 20% damage", effect:{ atk:4, maxHp:15 } },
+  { id:"oscillation",    name:"Oscillation",     ico:"〰️", type:"equipment",  slot:"tail_enhancements", price:220, desc:"Attacks have +2% (+3% per star) chance to hit twice", effect:{ atk:6, maxMp:10 } },
+
+  // Head Gear
+  { id:"phantasm",       name:"Phantasm",        ico:"🎭", type:"equipment",  slot:"head_gear", price:130, desc:"Increased evasion and dodge rate +5%", effect:{ maxHp:20, maxMp:10 } },
+  { id:"aura_crown",     name:"Aura",            ico:"👑", type:"equipment",  slot:"head_gear", price:185, desc:"Tears mind focus, reducing enemy defense by 5%", effect:{ atk:3, maxHp:30 } },
 ];
 
 const MAPPY_ITEMS_POOL = [
@@ -122,6 +142,16 @@ const MAPPY_ITEMS_POOL = [
   { id:"cosmic_eye",      name:"Cosmic Eye",       ico:"👁️", type:"equipment",  slot:"accessory", price:400, desc:"+25 ATK +60 Max MP +30 Max HP", effect:{ atk:25, maxMp:60, maxHp:30 } },
   { id:"deja_vu",         name:"Déjà Vu",          ico:"🌀", type:"consumable", price:150, desc:"Resets HP & MP to 100% in battle, removing all debuffs." },
   { id:"psyche",          name:"Psyche",           ico:"🧬", type:"consumable", price:1000, desc:"Ascension item required to level up 5★ items (up to +5)." },
+
+  // Mappy Rare Equipment
+  { id:"stasis",          name:"Stasis",           ico:"❄️", type:"equipment",  slot:"body_armor", price:260, desc:"DR +12%, -2.5% Enemy Crit Damage. Unlocks 20% chance to Slow enemy at 1 star", effect:{ dr:12, maxHp:30 } },
+  { id:"myoclonia",       name:"Myoclonia",        ico:"⚡", type:"equipment",  slot:"body_armor", price:340, desc:"DR +15%, Thorns 20%. Unlocks 10% chance to Paralyze enemy at 2 stars", effect:{ dr:15, maxHp:50, thorns:20 } },
+  { id:"trigger",         name:"Trigger",          ico:"🔫", type:"equipment",  slot:"paw_gloves", price:250, desc:"Crit +2%, Critical damage multiplier +10%", effect:{ atk:8, maxMp:15 } },
+  { id:"trauma",          name:"Trauma",           ico:"🥊", type:"equipment",  slot:"paw_gloves", price:380, desc:"Hybrid-only. Base ATK +12%, Crit -1% per star. Unlocks Crushing Blow at 4 stars", effect:{ atk:12, maxHp:20 } },
+  { id:"lapse",           name:"Lapse",            ico:"⏳", type:"equipment",  slot:"tail_enhancements", price:280, desc:"3% chance to freeze enemy turn for 1 turn", effect:{ atk:8, maxHp:25 } },
+  { id:"paradox",         name:"Paradox",          ico:"🔗", type:"equipment",  slot:"tail_enhancements", price:350, desc:"Inverts enemy debuffs into buffs. Unlocks 50% persistent hold at 3 stars", effect:{ atk:10, maxMp:25 } },
+  { id:"hypnagogia_crown",name:"Hypnagogia",       ico:"👁️", type:"equipment",  slot:"head_gear", price:290, desc:"5% (+5% per star) chance to hit for x2 damage, x4 damage at 3 stars", effect:{ atk:8, maxMp:30 } },
+  { id:"catharsis_hat",   name:"Catharsis",        ico:"🎩", type:"equipment",  slot:"head_gear", price:360, desc:"Decreases Ultimate Bond requirement by 15%, +10% coin/shard drops", effect:{ atk:12, maxHp:40, maxMp:30 } },
 ];
 
 // ── Enemies ──────────────────────────────────────────────────────────
@@ -393,6 +423,7 @@ const RARITY_STYLE = {
   rare:     { bg:"rgba(59,130,246,0.15)", border:"rgba(59,130,246,0.6)",  label:"RARE",      color:"#93c5fd" },
   uncommon: { bg:"rgba(16,185,129,0.12)", border:"rgba(16,185,129,0.5)",  label:"UNCOMMON",  color:"#6ee7b7" },
   common:   { bg:"rgba(250,204,21,0.08)", border:"rgba(250,204,21,0.35)", label:"COMMON",    color:"#fde68a" },
+  shard:    { bg:"rgba(6,182,212,0.18)",  border:"rgba(6,182,212,0.8)",   label:"SHARD",     color:"#67e8f9" },
   empty:    { bg:"rgba(255,255,255,0.02)",border:"rgba(255,255,255,0.08)",label:"EMPTY",     color:"#444"    },
 };
 
@@ -439,6 +470,7 @@ function generateScavengeBoxes(luckBonus) {
       return { value: 0, rarity: "empty", revealed: false };
     }
 
+    if (Math.random() < 0.001) return { value: 1, rarity: "shard", revealed: false, isShard: true };
     if (Math.random() < 0.00001) return { value: 5000, rarity: "jackpot", revealed: false };
     
     // Rarity distribution based on the remaining spawnChance (smaller chance means rarer items). Luck bonus slightly improves rarity chance.
@@ -472,6 +504,32 @@ function generateScavengeBoxes(luckBonus) {
 function itemDisplayName(item) {
   const stars = "★".repeat(item.forgeLevel || 0);
   return stars ? (item.baseName || item.name) + " " + stars : (item.baseName || item.name);
+}
+
+function formatSlotName(slot) {
+  if (!slot) return "";
+  const s = slot.toLowerCase();
+  if (s === "weapon") return "Weapon Gear ⚔️";
+  if (s === "accessory") return "Accessory Gear 💍";
+  if (s === "aura") return "Aura Gear 🌫️";
+  if (s === "body_armor") return "Body Armor 🛡️";
+  if (s === "paw_gloves") return "Paw Gloves 🐾";
+  if (s === "tail_enhancements") return "Tail Enhancement 〰️";
+  if (s === "head_gear") return "Head Gear 👑";
+  return slot.toUpperCase();
+}
+
+function slotDisplayName(slot) {
+  if (!slot) return "";
+  const s = slot.toLowerCase();
+  if (s === "weapon") return "Weapon ⚔️";
+  if (s === "accessory") return "Accessory 💍";
+  if (s === "aura") return "Aura 🌫️";
+  if (s === "body_armor") return "Body Armor 🛡️";
+  if (s === "paw_gloves") return "Paw Gloves 🐾";
+  if (s === "tail_enhancements") return "Tail 〰️";
+  if (s === "head_gear") return "Head Gear 👑";
+  return slot;
 }
 
 function itemSellPrice(item) {
@@ -519,9 +577,9 @@ function safeLoad() {
     }));
 
     // Ensure unique structural fields inside loaded equipped items
-    const rawEq = Object.assign({ weapon:null, accessory:null, aura:null }, p.equipped || {});
-    loaded.equipped = { weapon: null, accessory: null, aura: null };
-    ["weapon", "accessory", "aura"].forEach(slot => {
+    const rawEq = Object.assign({ weapon:null, accessory:null, aura:null, body_armor:null, paw_gloves:null, tail_enhancements:null, head_gear:null }, p.equipped || {});
+    loaded.equipped = { weapon: null, accessory: null, aura: null, body_armor: null, paw_gloves: null, tail_enhancements: null, head_gear: null };
+    ["weapon", "accessory", "aura", "body_armor", "paw_gloves", "tail_enhancements", "head_gear"].forEach(slot => {
       const item = rawEq[slot];
       if (item) {
         loaded.equipped[slot] = {
@@ -583,7 +641,9 @@ function ScavengeGame({ luckBonus, onFinish }) {
   const [boxes]    = useState(() => generateScavengeBoxes(luckBonus));
   const [revealed, setRevealed] = useState(Array(10).fill(false));
   const [done, setDone]         = useState(false);
-  const collected = boxes.reduce((s, b, i) => s + (revealed[i] ? b.value : 0), 0);
+  
+  const collectedCoins = boxes.reduce((s, b, i) => s + (revealed[i] && !b.isShard ? b.value : 0), 0);
+  const collectedShards = boxes.reduce((s, b, i) => s + (revealed[i] && b.isShard ? b.value : 0), 0);
 
   function flip(idx) {
     if (revealed[idx] || done) return;
@@ -615,7 +675,13 @@ function ScavengeGame({ luckBonus, onFinish }) {
                 boxShadow: revealed[i] && box.rarity === "jackpot" ? "0 0 18px rgba(255,215,0,0.6)" : "none",
               }}>
                 {revealed[i] ? (
-                  box.value > 0 ? (
+                  box.isShard ? (
+                    <>
+                      <span style={{ fontSize: 16 }}>💎</span>
+                      <span style={{ fontWeight:"bold" }}>{box.value}</span>
+                      <span style={{ fontSize:9, opacity:0.8 }}>SHARD</span>
+                    </>
+                  ) : box.value > 0 ? (
                     <>
                       <span style={{ fontSize: box.rarity === "jackpot" ? 18 : 14 }}>{box.rarity === "jackpot" ? "💵" : "🪙"}</span>
                       <span style={{ fontWeight:"bold" }}>{box.value}</span>
@@ -630,12 +696,17 @@ function ScavengeGame({ luckBonus, onFinish }) {
           })}
         </div>
         <div style={{ background:"rgba(255,255,255,0.04)", borderRadius:12, padding:"10px 14px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <span style={{ color:"#fbbf24", fontWeight:"bold", fontSize:20 }}>🪙 {collected}</span>
+          <div style={{ display:"flex", gap:16 }}>
+            <span style={{ color:"#fbbf24", fontWeight:"bold", fontSize:20 }}>🪙 {collectedCoins}</span>
+            {collectedShards > 0 && (
+              <span style={{ color:"#67e8f9", fontWeight:"bold", fontSize:20 }}>💎 {collectedShards}</span>
+            )}
+          </div>
           <span style={{ color:"#a78bfa", fontSize:13 }}>collected so far</span>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
           <Btn color="#4338ca" onClick={() => { setRevealed(Array(10).fill(true)); setDone(true); }} disabled={done}>✨ Reveal All</Btn>
-          <Btn color="#166534" onClick={() => onFinish(collected)}>✓ Collect & Stop</Btn>
+          <Btn color="#166534" onClick={() => onFinish(collectedCoins, collectedShards)}>✓ Collect & Stop</Btn>
         </div>
       </div>
     </div>
@@ -983,10 +1054,15 @@ function VoidScreen({
 
                     return (
                       <div key={i} style={{ background:"rgba(255,255,255,0.03)", padding:10, borderRadius:12, display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, opacity: isSoldOut ? 0.6 : 1 }}>
-                        <div>
-                          <div style={{ fontWeight:"bold", fontSize:13 }}>
-                            {item.ico} {item.name} 
-                            <span style={{ fontSize:10, color:"#a78bfa", marginLeft:6 }}>({isSoldOut ? "Out of Stock" : `Stock: ${stock}`})</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight:"bold", fontSize:13, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                            <span>{item.ico} {item.name}</span>
+                            {item.slot && (
+                              <span style={{ fontSize:9, background:"rgba(167,139,250,0.15)", color:"#c4b5fd", padding:"1px 6px", borderRadius:4, fontWeight:"bold" }}>
+                                {slotDisplayName(item.slot)}
+                              </span>
+                            )}
+                            <span style={{ fontSize:10, color:"#a78bfa" }}>({isSoldOut ? "Out of Stock" : `Stock: ${stock}`})</span>
                           </div>
                           <div style={{ fontSize:11, opacity:0.8, marginTop:2 }}>{item.desc}</div>
                         </div>
@@ -1038,10 +1114,15 @@ function VoidScreen({
 
                     return (
                       <div key={i} style={{ background:"rgba(180,83,9,0.05)", border:"1px solid rgba(180,83,9,0.15)", padding:10, borderRadius:12, display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, opacity: isSoldOut ? 0.6 : 1 }}>
-                        <div>
-                          <div style={{ fontWeight:"bold", fontSize:13 }}>
-                            {item.ico} {item.name} 
-                            <span style={{ fontSize:10, color:"#f59e0b", marginLeft:6 }}>({isSoldOut ? "Out of Stock" : `Stock: ${stock}`})</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight:"bold", fontSize:13, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                            <span>{item.ico} {item.name}</span>
+                            {item.slot && (
+                              <span style={{ fontSize:9, background:"rgba(245,158,11,0.15)", color:"#f59e0b", padding:"1px 6px", borderRadius:4, fontWeight:"bold" }}>
+                                {slotDisplayName(item.slot)}
+                              </span>
+                            )}
+                            <span style={{ fontSize:10, color:"#f59e0b" }}>({isSoldOut ? "Out of Stock" : `Stock: ${stock}`})</span>
                           </div>
                           <div style={{ fontSize:11, opacity:0.8, marginTop:2 }}>{item.desc}</div>
                         </div>
@@ -1072,22 +1153,22 @@ function VoidScreen({
             {/* Equipped Items Area */}
             <div style={{ marginBottom:14 }}>
               <div style={{ fontSize:12, color:"#06b6d4", fontWeight:"bold", marginBottom:6 }}>🛡️ Equipped Gear</div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:6 }}>
-                {["weapon", "accessory", "aura"].map(slot => {
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(110px, 1fr))", gap:6 }}>
+                {["weapon", "accessory", "aura", "body_armor", "paw_gloves", "tail_enhancements", "head_gear"].map(slot => {
                   const gear = equipped[slot];
                   return (
-                    <div key={slot} style={{ background:"rgba(0,0,0,0.3)", padding:8, borderRadius:10, textAlign:"center" }}>
-                      <div style={{ fontSize:10, color:"#0891b2", textTransform:"uppercase", marginBottom:4 }}>{slot}</div>
+                    <div key={slot} style={{ background:"rgba(0,0,0,0.3)", padding:6, borderRadius:10, textAlign:"center", border:"1px solid rgba(6,182,212,0.1)" }}>
+                      <div style={{ fontSize:9, color:"#a78bfa", textTransform:"uppercase", marginBottom:4, fontWeight:"bold" }}>{slot.replace("_", " ")}</div>
                       {gear ? (
                         <div>
-                          <div style={{ fontSize:11, fontWeight:"bold" }}>{gear.ico} {itemDisplayName(gear)}</div>
+                          <div style={{ fontSize:10, fontWeight:"bold", overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:1, WebkitBoxOrient:"vertical" }}>{gear.ico} {itemDisplayName(gear)}</div>
                           <button 
                             onClick={() => unequipItem(slot, gear)}
-                            style={{ background:"rgba(220,38,38,0.25)", border:"none", color:"#fca5a5", padding:"4px 8px", borderRadius:6, fontSize:10, marginTop:4, cursor:"pointer" }}
+                            style={{ background:"rgba(220,38,38,0.25)", border:"none", color:"#fca5a5", padding:"2px 6px", borderRadius:6, fontSize:9, marginTop:4, cursor:"pointer" }}
                           >Unequip</button>
                         </div>
                       ) : (
-                        <div style={{ fontSize:11, opacity:0.4, padding:"6px 0" }}>Empty</div>
+                        <div style={{ fontSize:10, opacity:0.3, padding:"4px 0" }}>Empty</div>
                       )}
                     </div>
                   );
@@ -1128,12 +1209,19 @@ function VoidScreen({
                   {invEquips.map((item) => (
                     <div key={item.uid} style={{ background:"rgba(255,255,255,0.03)", padding:8, borderRadius:10, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                       <div>
-                        <span style={{ fontWeight:"bold", fontSize:12 }}>{item.ico} {itemDisplayName(item)}</span>
-                        <span style={{ fontSize:10, color:"#a78bfa", marginLeft:6 }}>({item.desc})</span>
+                        <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                          <span style={{ fontWeight:"bold", fontSize:12 }}>{item.ico} {itemDisplayName(item)}</span>
+                          {item.slot && (
+                            <span style={{ fontSize:9, background:"rgba(167,139,250,0.15)", color:"#c4b5fd", padding:"1px 6px", borderRadius:4, fontWeight:"bold" }}>
+                              {slotDisplayName(item.slot)}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize:10, color:"#9ca3af", marginTop:2 }}>{item.desc}</div>
                       </div>
                       <button 
                         onClick={() => equipItem(item)}
-                        style={{ background:"#0891b2", border:"none", color:"white", padding:"4px 8px", borderRadius:6, fontSize:11, cursor:"pointer" }}
+                        style={{ background:"#0891b2", border:"none", color:"white", padding:"4px 8px", borderRadius:6, fontSize:11, cursor:"pointer", alignSelf:"center" }}
                       >Equip</button>
                     </div>
                   ))}
@@ -1358,7 +1446,7 @@ export default function DreamGuardian() {
     const isAwesome = game.mood > 1000;
     
     // Bond chance mechanic:
-    // If Awesome: Always exactly +6 bond gain (no secret additions/bonuses)
+    // If Awesome: Always exactly +3 bond gain (no secret additions/bonuses)
     // If Stressed: 30% chance to trigger friction deducting 1-3 bond points from the base +4 gain
     const rollChance = Math.random() < 0.30;
     const triggerDeduction = !isAwesome && rollChance;
@@ -1366,7 +1454,7 @@ export default function DreamGuardian() {
 
     setGame(g => {
       const awesome = g.mood > 1000;
-      const baseBondGain = awesome ? 6 : 4;
+      const baseBondGain = awesome ? 3 : 4;
       let totalGain = baseBondGain;
       if (triggerDeduction) {
         totalGain = Math.max(1, totalGain - deductionAmount);
@@ -1379,7 +1467,7 @@ export default function DreamGuardian() {
     });
 
     if (isAwesome) {
-      notify("Alex smiled warmly! Bond increased (+6) ✨");
+      notify("Alex smiled warmly! Bond increased (+3) ✨");
     } else {
       if (triggerDeduction) {
         notify(`Alex is extremely stressed... Friction reduced bond gain by ${deductionAmount} (Gained +${4 - deductionAmount}) 💔`);
@@ -1389,13 +1477,21 @@ export default function DreamGuardian() {
     }
   }
 
-  function onScavengeFinish(coins) {
+  function onScavengeFinish(coins, shards = 0) {
     setShowScavenge(false);
     setGame(g => ({
       ...g, scavengedToday: true,
-      player: { ...g.player, coins: g.player.coins + coins },
+      player: { 
+        ...g.player, 
+        coins: g.player.coins + coins,
+        shards: (g.player.shards || 0) + shards
+      },
     }));
-    notify(coins > 0 ? "Luna collected " + coins + " coins! 🪙" : "Nothing found this time...");
+    let msg = "";
+    if (coins > 0) msg += `Luna collected ${coins} coins! 🪙 `;
+    if (shards > 0) msg += `Luna found ${shards} Dream Shard! 💎 `;
+    if (!msg) msg = "Nothing found this time...";
+    notify(msg.trim());
   }
 
   function alexGoesToWork() {
@@ -1518,10 +1614,12 @@ export default function DreamGuardian() {
     let dmgToPlayer = 0;
     let dodgeMsg = "";
     let updatedEnemyState = { ...enemy };
+    let isTrueLaser = false;
 
     if (enemy.id === "rem") {
       const roll = Math.random();
       if (roll < 0.25) {
+        isTrueLaser = true;
         // True Laser: ignores all armor and reductions! Deals exactly 50 damage
         dmgToPlayer = 50;
         dodgeMsg = "🌌 REM fired a TRUE LASER! Ignored all defenses and dealt 50 True Damage!";
@@ -1554,6 +1652,27 @@ export default function DreamGuardian() {
     } else {
       dmgToPlayer = isDodged ? 0 : Math.max(1, effectiveAtk - totalDef);
       dodgeMsg = isDodged ? "Luna dodged the attack!" : "Enemy dealt " + dmgToPlayer + " damage." + (totalDef > 0 ? ` (Blocked ${totalDef})` : "");
+    }
+
+    if (dmgToPlayer > 0 && !isTrueLaser) {
+      const drPercent = equippedStats.dr || 0;
+      if (drPercent > 0) {
+        const beforeDr = dmgToPlayer;
+        dmgToPlayer = Math.max(1, Math.floor(dmgToPlayer * (1 - drPercent / 100)));
+        const prevented = beforeDr - dmgToPlayer;
+        if (prevented > 0) {
+          dodgeMsg += ` (Absorbed ${prevented} dmg via active DR)`;
+        }
+      }
+
+      const thornsPercent = equippedStats.thorns || 0;
+      if (thornsPercent > 0) {
+        const reflected = Math.floor(dmgToPlayer * (thornsPercent / 100));
+        if (reflected > 0) {
+          updatedEnemyState.hp = Math.max(0, updatedEnemyState.hp - reflected);
+          dodgeMsg += ` (Thorns reflected ${reflected} dmg!)`;
+        }
+      }
     }
 
     const mpRegen      = ((game.upgrades && game.upgrades.h2) || 0) > 0 ? 3 : 0;
@@ -1713,16 +1832,32 @@ export default function DreamGuardian() {
       return;
     }
 
+    const nextEnemyQueue = battle.enemyQueue.map((e, i) =>
+      i === battle.currentIdx ? { ...e, hp: newEnemyHp } : e
+    );
     const next = resolveEnemyCounter(
-      { ...battle, dodgeActive: false }, { ...player, hp: player.hp + vampHeal - finalReflect }, atkLog
+      { ...battle, enemyQueue: nextEnemyQueue, dodgeActive: false }, { ...player, hp: player.hp + vampHeal - finalReflect }, atkLog
     );
     if (next.dead) { handleDefeatByEnemy(); return; }
+
+    if (next.updatedEnemy && next.updatedEnemy.hp <= 0) {
+      handleEnemyDefeated({
+        ...game,
+        battle: {
+          ...game.battle,
+          enemyQueue: nextEnemyQueue.map((e, i) =>
+            i === battle.currentIdx ? { ...e, hp: 0 } : e
+          )
+        }
+      }, next.playerMp);
+      return;
+    }
 
     const newQueue = battle.enemyQueue.map((e, i) =>
       i === battle.currentIdx
         ? { 
             ...e, 
-            hp: newEnemyHp, 
+            hp: next.updatedEnemy ? next.updatedEnemy.hp : newEnemyHp, 
             debuffAtk: next.newDebuffAtk, 
             debuffTurns: next.newDebuffTurns,
             dodgeLowered: next.updatedEnemy ? next.updatedEnemy.dodgeLowered : e.dodgeLowered
@@ -1887,10 +2022,24 @@ export default function DreamGuardian() {
     const next = resolveEnemyCounter({ ...battle, enemyQueue: newQueue, dodgeActive: newDodge }, { ...player, hp: player.hp - finalReflect, mp: newPlayerMp }, [skillLog]);
     if (next.dead) { handleDefeatByEnemy(); return; }
 
+    if (next.updatedEnemy && next.updatedEnemy.hp <= 0) {
+      handleEnemyDefeated({
+        ...game,
+        battle: {
+          ...game.battle,
+          enemyQueue: newQueue.map((e, i) =>
+            i === battle.currentIdx ? { ...e, hp: 0 } : e
+          )
+        }
+      }, next.playerMp);
+      return;
+    }
+
     const finalQueue = newQueue.map((e, i) =>
       i === battle.currentIdx 
         ? { 
             ...e, 
+            hp: next.updatedEnemy ? next.updatedEnemy.hp : newEnemyHp,
             debuffAtk: next.newDebuffAtk, 
             debuffTurns: next.newDebuffTurns,
             dodgeLowered: next.updatedEnemy ? next.updatedEnemy.dodgeLowered : e.dodgeLowered
@@ -2172,7 +2321,7 @@ export default function DreamGuardian() {
   function useItem(item) {
     if (item.type !== "consumable") return;
 
-    if (item.id === "dejavu") {
+    if (item.id === "deja_vu" || item.id === "dejavu") {
       if (!game.battle) {
         notify("🌌 Déjà Vu can only be used during Dreamscape battles!");
         return;
@@ -2846,11 +2995,11 @@ export default function DreamGuardian() {
           </div>
           {eqOpen && (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:12 }}>
-              {["weapon", "accessory", "aura"].map(slot => {
+              {["weapon", "accessory", "aura", "body_armor", "paw_gloves", "tail_enhancements", "head_gear"].map(slot => {
                 const item = game.equipped[slot];
                 return (
-                  <div key={slot} style={{ background:"rgba(255,255,255,0.04)", padding:12, borderRadius:14 }}>
-                    <div style={{ fontSize:11, letterSpacing:2, marginBottom:8, color:"#a78bfa" }}>{slot.toUpperCase()}</div>
+                  <div key={slot} style={{ background:"rgba(255,255,255,0.04)", padding:12, borderRadius:14, border:"1px solid rgba(139,92,246,0.15)" }}>
+                    <div style={{ fontSize:11, letterSpacing:2, marginBottom:8, color:"#c4b5fd", fontWeight:"bold" }}>{slot.replace("_", " ").toUpperCase()}</div>
                     {item ? (
                       <div>
                         <div style={{ fontWeight:"bold", marginBottom:6 }}>

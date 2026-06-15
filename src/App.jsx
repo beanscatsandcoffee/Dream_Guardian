@@ -1,5 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 
+import imgFogling from "./assets/images/fogling_1781225256283.jpg";
+import imgNightHound from "./assets/images/night_hound_1781225280037.jpg";
+import imgShadeWraith from "./assets/images/shade_wraith_1781225293492.jpg";
+import imgAnxietyWisp from "./assets/images/anxiety_wisp_1781225306047.jpg";
+import imgMemoryGhoul from "./assets/images/memory_ghoul_1781225318194.jpg";
+import imgLucidWeaver from "./assets/images/lucid_weaver_1781225331325.jpg";
+import imgHypCrawler from "./assets/images/hyp_crawler_1781225345010.jpg";
+import imgSomCrawler from "./assets/images/somatic_crawler_1781225360180.jpg";
+import imgAethPhantasm from "./assets/images/aeth_phantasm_1781225374184.jpg";
+import imgInsomniaTitan from "./assets/images/insomnia_titan_1781225393737.jpg";
+import imgRemBoss from "./assets/images/rem_boss_1781225405134.jpg";
+
 // ── Responsive hook ──────────────────────────────────────────────────
 function useResponsive() {
   const init = typeof window !== "undefined"
@@ -61,6 +73,44 @@ const defaultPlayer = {
 
 const introText = "Alex never sleeps peacefully anymore.\n\nEvery night, something crawls through the Dreamscape.\nSomething hungry.\n\nLuna began seeing the portal beneath the bed weeks ago.\nA breathing violet tear hidden beneath reality itself.\n\nNow every night is a battle.\n\nProtect Alex.\nEnter the Dreamscape.\nSurvive the nightmares.";
 
+const STORY_ACTS = {
+  prologue: {
+    title: "Prologue: The Bond",
+    subtitle: "A Guardian's Beginning",
+    banner: "🐈️🐾",
+    color: "#a78bfa",
+    text: "In a cozy apartment, a cat named Luna lives with her human, Alex. Their bond is simple but profound: Alex provides warmth, shelter, and food, while Luna offers companionship and silent protection. But lately, Alex has been restless at night, tossing and turning, plagued by nightmares and insomnia. Luna notices the dark circles under Alex's eyes, the untouched breakfast bowls, and the dwindling quality of her own meals.\n\nOne moonlit night, as Alex finally drifts into troubled sleep, Luna discovers a shimmering portal beneath the bed—a gateway to the Dreamscape, the otherworld where nightmares take physical form."
+  },
+  act1: {
+    title: "Act I: Into the Dreamscape",
+    subtitle: "The Violet Tear Gate",
+    banner: "🔮🌌",
+    color: "#c084fc",
+    text: "Luna steps through the portal and finds herself in a twisted reflection of their home. Shadows writhe in corners, and whispers echo through distorted hallways. Here, she encounters the Nightmare Feeders—spectral creatures that feast on human rest, growing stronger with each sleepless night.\n\nA wise spirit, the Keeper of Dreams, appears to Luna. 'Your human is under siege,' the Keeper explains. 'These creatures drain their peace, feeding on anxiety, stress, and fear. Only a guardian with true devotion can drive them back.'\n\nLuna accepts her role without hesitation. For every peaceful night Alex enjoys, the food is better, the home is happier, and their bond grows stronger. But more than that—Luna loves her human."
+  },
+  act2: {
+    title: "Act II: The Nightly Battles",
+    subtitle: "Harnessing Dream Essence",
+    banner: "⚡🌙",
+    color: "#60a5fa",
+    text: "Each night, Luna enters the Dreamscape to face increasingly dangerous foes:\n\n• Anxiety Wraiths that multiply with every worry\n• Memory Ghouls that twist happy moments into sources of dread\n• The Insomnia Titan, a massive entity that prevents rest entirely\n\nLuna fights with agility, cunning, and fierce determination. She learns to harness Dream Essence—fragments of Alex's happy memories—to strengthen her attacks and unlock new abilities. Each victory brings Alex one step closer to restful sleep."
+  },
+  act3: {
+    title: "Act III: The Ultimate Sacrifice",
+    subtitle: "The Void Shepherd Confrontation",
+    banner: "🌌⚔️",
+    color: "#f43f5e",
+    text: "As Luna delves deeper, she discovers the source: The Void Shepherd, an ancient creature that feeds on the despair of the sleepless. It has marked Alex as its primary target.\n\nThe final confrontation is brutal. Luna is outmatched, but she refuses to retreat. Drawing on every ounce of love and loyalty, she channels all the Dream Essence she's collected—every purr, every cuddle, every quiet moment shared with Alex—into one final strike."
+  },
+  epilogue: {
+    title: "Epilogue: The Morning After",
+    subtitle: "A Peaceful Dawn",
+    banner: "☀️🐟",
+    color: "#34d399",
+    text: "Alex wakes to the best sleep they've had in months. Sunlight streams through the window. Luna is curled up at the foot of the bed, exhausted but purring softly. Alex doesn't know about the battles fought in the shadows, but they feel the difference.\n\nThat morning, Alex prepares Luna's favorite meal—fresh fish and cream. As Luna eats, she glances at the space beneath the bed. The portal is sealed, for now. But she knows: if the nightmares return, she'll be ready.\n\nBecause a well-rested human means a happy home. And for Luna, that's worth fighting for."
+  }
+};
+
 const defaultState = {
   day: 1, phase: "day",
   alexWorking: false,
@@ -83,6 +133,12 @@ const defaultState = {
   battleHistory: [],
   lastActShown: 0,
   neuralMissionActive: null,
+  shownActs: [],
+  shownAchievements: [],
+  shownPayoffs: [],
+  hasConfirmedPost200: false,
+  gameCompleted: false,
+  feralConsecutiveCount: 0,
 };
 
 // ── Item Pools ───────────────────────────────────────────────────────
@@ -156,18 +212,24 @@ const MAPPY_ITEMS_POOL = [
 
 // ── Enemies ──────────────────────────────────────────────────────────
 const REGULAR_ENEMIES = [
-  { id:"fogling",      name:"Fogling",      ico:"👁️", hp:40,  maxHp:40,  atk:6,  reward:8,   isBoss:false },
-  { id:"night_hound",  name:"Night Hound",  ico:"🐺", hp:70,  maxHp:70,  atk:10, reward:14,  isBoss:false },
-  { id:"shade_wraith", name:"Shade Wraith", ico:"👻", hp:55,  maxHp:55,  atk:8,  reward:11,  isBoss:false },
-  { id:"anxiety_wisp", name:"Anxiety Wisp", ico:"💜", hp:45,  maxHp:45,  atk:7,  reward:9,   isBoss:false },
-  { id:"mem_ghoul",    name:"Memory Ghoul", ico:"🌀", hp:80,  maxHp:80,  atk:11, reward:16,  isBoss:false },
-  { id:"lucid_weaver", name:"Lucid Weaver",  ico:"🕸️", hp:40,  maxHp:40,  atk:6,  reward:8,   isBoss:false },
-  { id:"hyp_crawler",  name:"Hypnagogic Crawler", ico:"🐛", hp:48, maxHp:48, atk:7, reward:9, isBoss:false },
-  { id:"som_lurker",   name:"Somatic Lurker", ico:"🦎",  hp:65,  maxHp:65,  atk:9,  reward:12,  isBoss:false },
-  { id:"aeth_phantasm",name:"Aetheric Phantasm", ico:"✨", hp:75,  maxHp:75,  atk:10, reward:15,  isBoss:false },
+  { id:"fogling",      name:"Fogling",      ico:"👁️", img:imgFogling, hp:40,  maxHp:40,  atk:6,  reward:8,   isBoss:false },
+  { id:"night_hound",  name:"Night Hound",  ico:"🐺", img:imgNightHound, hp:70,  maxHp:70,  atk:10, reward:14,  isBoss:false },
+  { id:"shade_wraith", name:"Shade Wraith", ico:"👻", img:imgShadeWraith, hp:55,  maxHp:55,  atk:8,  reward:11,  isBoss:false },
+  { id:"anxiety_wisp", name:"Anxiety Wisp", ico:"💜", img:imgAnxietyWisp, hp:45,  maxHp:45,  atk:7,  reward:9,   isBoss:false },
+  { id:"mem_ghoul",    name:"Memory Ghoul", ico:"🌀", img:imgMemoryGhoul, hp:80,  maxHp:80,  atk:11, reward:16,  isBoss:false },
+  { id:"lucid_weaver", name:"Lucid Weaver",  ico:"🕸️", img:imgLucidWeaver, hp:40,  maxHp:40,  atk:6,  reward:8,   isBoss:false },
+  { id:"hyp_crawler",  name:"Hypnagogic Crawler", ico:"🐛", img:imgHypCrawler, hp:48, maxHp:48, atk:7, reward:9, isBoss:false },
+  { id:"som_lurker",   name:"Somatic Lurker", ico:"🦎",  img:imgSomCrawler, hp:65,  maxHp:65,  atk:9,  reward:12,  isBoss:false },
+  { id:"aeth_phantasm",name:"Aetheric Phantasm", ico:"✨", img:imgAethPhantasm, hp:75,  maxHp:75,  atk:10, reward:15,  isBoss:false },
+  { id:"apnea",        name:"Apnea",              ico:"💨", img:imgAnxietyWisp,   hp:45,  maxHp:45,  atk:6,  reward:8,   isBoss:false },
+  { id:"tremor",       name:"Tremor",             ico:"🐜", img:imgHypCrawler,    hp:45,  maxHp:45,  atk:5,  reward:10,  isBoss:false },
+  { id:"fixation",     name:"Fixation",           ico:"🕸️", img:imgLucidWeaver,   hp:90,  maxHp:90,  atk:12, reward:18,  isBoss:false },
+  { id:"phobia",       name:"Phobia",             ico:"🎭", img:imgShadeWraith,   hp:100, maxHp:100, atk:13, reward:22,  isBoss:false },
+  { id:"somnambulist", name:"Somnambulist",       ico:"🧟", img:imgMemoryGhoul,   hp:140, maxHp:140, atk:16, reward:35,  isBoss:false },
+  { id:"phantasmagoria",name:"Phantasmagoria",    ico:"👥", img:imgAethPhantasm,  hp:130, maxHp:130, atk:15, reward:30,  isBoss:false },
 ];
-const BOSS_ENEMY = { id:"insomnia_titan", name:"Insomnia Titan", ico:"⏰", hp:320, maxHp:320, atk:22, reward:150, isBoss:true };
-const REM_BOSS = { id:"rem", name:"REM", ico:"👁️‍🗨️", hp:450, maxHp:450, atk:50, reward:250, isBoss:true, magicShield:2, dodgeLowered:false };
+const BOSS_ENEMY = { id:"insomnia_titan", name:"Insomnia Titan", ico:"⏰", img:imgInsomniaTitan, hp:320, maxHp:320, atk:22, reward:150, isBoss:true };
+const REM_BOSS = { id:"rem", name:"REM", ico:"👁️‍🗨️", img:imgRemBoss, hp:450, maxHp:450, atk:50, reward:250, isBoss:true, magicShield:2, dodgeLowered:false };
 
 // ── Skill Trees ──────────────────────────────────────────────────────
 const SKILL_TREE = {
@@ -270,6 +332,31 @@ function getMoodDetails(pts) {
   return               { label:"Tier 1: Deprived", color:"#ef4444" };
 }
 
+function getGamePhase(day) {
+  if (day <= 40) {
+    return { name: "Phase 1: Prologue", desc: "The Bond", num: 1, bossKey: "p1" };
+  } else if (day <= 80) {
+    return { name: "Phase 2: Act I", desc: "Into the Dreamscape", num: 2, bossKey: "p2" };
+  } else if (day <= 120) {
+    return { name: "Phase 3: Act II", desc: "The Shattered Mind", num: 3, bossKey: "p3" };
+  } else if (day <= 160) {
+    return { name: "Phase 4: Act III", desc: "The Ultimate Sacrifice", num: 4, bossKey: "p4" };
+  } else {
+    return { name: "Phase 5: Epilogue", desc: "A Peaceful Dawn", num: 5, bossKey: "p5" };
+  }
+}
+
+const PHASE_BOSSES = {
+  p1: { id: "echo_dread", name: "Echo of Dread", ico: "👻", img: imgShadeWraith, hp: 120, maxHp: 120, atk: 12, reward: 100, isBoss: true },
+  p2: { id: "gloom_weaver", name: "Gloom Weaver", ico: "🕸️", img: imgLucidWeaver, hp: 200, maxHp: 200, atk: 18, reward: 150, isBoss: true },
+  p3: { id: "somniphobia", name: "Somniphobia", ico: "💀", img: imgInsomniaTitan, hp: 350, maxHp: 350, atk: 24, reward: 250, isBoss: true },
+  p4: { id: "amigdala", name: "Amigdala", ico: "🧠", img: imgRemBoss, hp: 420, maxHp: 420, atk: 30, reward: 350, isBoss: true },
+  p5: { id: "dream_eater", name: "The Dream Eater (Nemesis of Sleep)", ico: "🌋", img: imgRemBoss, hp: 800, maxHp: 800, atk: 52, reward: 500, isBoss: true, magicShield: 3 },
+  // backups / alternates
+  obsidian_spectre: { id: "obsidian_spectre", name: "Obsidian Spectre", ico: "⏰", img: imgInsomniaTitan, hp: 320, maxHp: 320, atk: 25, reward: 220, isBoss: true },
+  shattered_reflection: { id: "shattered_reflection", name: "Shattered Reflection", ico: "👁️‍🗨️", img: imgRemBoss, hp: 480, maxHp: 480, atk: 35, reward: 300, isBoss: true, magicShield: 2 }
+};
+
 const ENEMY_PASSIVES = [
   { name: "Thorns", desc: "Reflects 2 damage when hit" },
   { name: "Empower", desc: "Deals +25% damage" },
@@ -326,9 +413,20 @@ function getEnemyPassivesAndSkills(tier, isBoss) {
 }
 
 function getEnemyCount(day, totalAtk, unlockedSkills) {
-  if (day > 0 && day % 7 === 0) return 15;
-  // Starting count everyday is 3-5 (Request 7)
-  return Math.floor(Math.random() * 3) + 3;
+  if (day > 0 && (day % 7 === 0 || day === 200)) {
+    return 20;
+  }
+  if (day <= 5) {
+    return Math.floor(Math.random() * 3) + 1; // 1-3
+  }
+  if (day <= 15) {
+    return Math.floor(Math.random() * 7) + 4; // 4-10
+  }
+  if (day <= 40) {
+    return Math.floor(Math.random() * 5) + 11; // 11-15
+  }
+  // 41-200 and beyond
+  return Math.floor(Math.random() * 5) + 15; // 15-19
 }
 
 function getBossAdaptability(enemy, totalAtk) {
@@ -357,16 +455,41 @@ function getBossAdaptability(enemy, totalAtk) {
 
 function generateEnemyQueue(count, day) {
   return Array.from({ length: count }, (_, i) => {
-    if (i === count - 1 && count >= 15) {
-      const isRem = Math.random() < 0.5;
-      const chosenBoss = isRem ? REM_BOSS : BOSS_ENEMY;
+    // Determine post-game scaling multiplier
+    let postGameMult = 1.0;
+    if (day > 300) {
+      postGameMult = 4.0;
+    } else if (day > 200) {
+      postGameMult = 2.0;
+    }
+
+    if (i === count - 1 && count >= 20) {
+      // Pick the correct boss for the current story phase
+      const phase = getGamePhase(day);
+      let bossKey = phase.bossKey;
+      if (bossKey === "p3" && day % 2 === 0) {
+        bossKey = "obsidian_spectre";
+      }
+      if (bossKey === "p4" && day % 2 === 0) {
+        bossKey = "shattered_reflection";
+      }
+      const chosenBoss = PHASE_BOSSES[bossKey] || PHASE_BOSSES.p5;
+
       const mult = Math.pow(1.5, Math.floor((day - 1) / 7));
-      const bHp = Math.floor(chosenBoss.hp * mult);
-      const bAtk = Math.max(1, Math.floor(chosenBoss.atk * mult));
+      let bHp = Math.floor(chosenBoss.hp * mult);
+      // Reduced progressive damage scaling by 15% for fairness (Part 4, #8)
+      const dmgMult = mult * 0.85;
+      let bAtk = Math.max(1, Math.floor(chosenBoss.atk * dmgMult));
+
+      // Apply endless post-game multiplier
+      bHp = Math.floor(bHp * postGameMult);
+      bAtk = Math.floor(bAtk * postGameMult);
+
       const { passives, skills } = getEnemyPassivesAndSkills("Normal", true);
 
-      // Add a visual skill if they are fighting REM
-      const bossSkills = isRem 
+      // Add special skills for certain bosses
+      const isRemLike = chosenBoss.id === "shattered_reflection" || chosenBoss.id === "dream_eater";
+      const bossSkills = isRemLike
         ? [{ name: "True Laser", desc: "True Damage (ignores all armor)" }, { name: "Rapid Vibration", desc: "Lowers dodge rate by 25%" }]
         : skills;
 
@@ -380,12 +503,24 @@ function generateEnemyQueue(count, day) {
         skills: bossSkills,
         debuffAtk: 0, 
         debuffTurns: 0,
-        magicShield: isRem ? 2 : 0,
-        dodgeLowered: false
+        magicShield: chosenBoss.magicShield || 0,
+        dodgeLowered: false,
+        displayName: `${chosenBoss.name} 👑`
       };
     }
-    const tmpl = REGULAR_ENEMIES[Math.floor(Math.random() * REGULAR_ENEMIES.length)];
+
     const tier = getEnemyTier(day);
+    let pool = REGULAR_ENEMIES;
+    if (tier === "Normal" || tier === "Uncommon") {
+      pool = REGULAR_ENEMIES.filter(e => e.id === "apnea" || e.id === "tremor" || (!["fixation", "phobia", "somnambulist", "phantasmagoria"].includes(e.id)));
+    } else if (tier === "Rare" || tier === "Mutated") {
+      pool = REGULAR_ENEMIES.filter(e => e.id === "fixation" || e.id === "phobia" || (!["somnambulist", "phantasmagoria"].includes(e.id)));
+    } else if (tier === "SR") {
+      pool = REGULAR_ENEMIES.filter(e => e.id === "somnambulist" || e.id === "phantasmagoria");
+    }
+    if (pool.length === 0) pool = REGULAR_ENEMIES;
+
+    const tmpl = pool[Math.floor(Math.random() * pool.length)];
     const { passives, skills } = getEnemyPassivesAndSkills(tier, false);
     
     const mult = Math.pow(1.5, Math.floor((day - 1) / 7));
@@ -397,10 +532,16 @@ function generateEnemyQueue(count, day) {
     else if (tier === "Mutated") { tierAtkMult = 1.4; tierHpMult = 1.35; }
     else if (tier === "SR") { tierAtkMult = 1.6; tierHpMult = 1.5; }
 
-    const finalHp = Math.floor(tmpl.hp * mult * tierHpMult);
-    const finalAtk = Math.max(1, Math.floor(tmpl.atk * mult * tierAtkMult));
+    let finalHp = Math.floor(tmpl.hp * mult * tierHpMult);
+    // Reduced progressive damage scaling by 15% for fairness (Part 4, #8)
+    const dmgMult = mult * 0.85;
+    let finalAtk = Math.max(1, Math.floor(tmpl.atk * dmgMult * tierAtkMult));
 
-    return { 
+    // Apply endless post-game multiplier
+    finalHp = Math.floor(finalHp * postGameMult);
+    finalAtk = Math.floor(finalAtk * postGameMult);
+
+    let enemyObj = { 
       ...tmpl, 
       hp: finalHp, 
       maxHp: finalHp, 
@@ -411,8 +552,35 @@ function generateEnemyQueue(count, day) {
       debuffAtk: 0, 
       debuffTurns: 0,
       magicShield: 0,
-      dodgeLowered: false
+      dodgeLowered: false,
+      displayName: `${tmpl.name} [${tier}]`
     };
+
+    // Tremor: multi Hp bar initialization
+    if (tmpl.id === "tremor") {
+      const bars = 3;
+      const barHpVal = Math.max(1, Math.floor(finalHp / bars));
+      enemyObj.hpBars = [barHpVal, barHpVal, barHpVal];
+      enemyObj.maxHpBars = [barHpVal, barHpVal, barHpVal];
+      enemyObj.hp = barHpVal * bars;
+      enemyObj.maxHp = barHpVal * bars;
+      enemyObj.displayName = "Tremor Swarm 🐜";
+    }
+
+    // Somnambulist: sleep-shield initialization
+    if (tmpl.id === "somnambulist") {
+      const shieldVal = Math.floor(finalHp * 0.5);
+      enemyObj.sleepShield = shieldVal;
+      enemyObj.maxSleepShield = shieldVal;
+      enemyObj.displayName = "Somnambulist 🧟 (Sleep Shield)";
+    }
+
+    // Phantasmagoria: split flag initialization
+    if (tmpl.id === "phantasmagoria") {
+      enemyObj.hasMultiplied = false;
+    }
+
+    return enemyObj;
   });
 }
 
@@ -470,7 +638,7 @@ function generateScavengeBoxes(luckBonus) {
       return { value: 0, rarity: "empty", revealed: false };
     }
 
-    if (Math.random() < 0.001) return { value: 1, rarity: "shard", revealed: false, isShard: true };
+    if (Math.random() < 0.01) return { value: 1, rarity: "shard", revealed: false, isShard: true };
     if (Math.random() < 0.00001) return { value: 5000, rarity: "jackpot", revealed: false };
     
     // Rarity distribution based on the remaining spawnChance (smaller chance means rarer items). Luck bonus slightly improves rarity chance.
@@ -499,6 +667,26 @@ function generateScavengeBoxes(luckBonus) {
     }
     return { value, rarity, revealed: false };
   });
+}
+
+function isStatOnlyDescription(desc) {
+  if (!desc) return false;
+  const cleaned = desc.trim().toLowerCase();
+  if (!cleaned.startsWith('+')) return false;
+  const blacklistedKeywords = [
+    '%', 'star', 'chance', 'hit', 'damage', 'enemy', 'slow', 'paralyze', 'freeze', 
+    'invert', 'reflect', 'unlock', 'hybrid', 'ultimate', 'every', 'cleave', 'reduce', 'impact', 'convert', 'absorb'
+  ];
+  if (blacklistedKeywords.some(keyword => cleaned.includes(keyword))) {
+    return false;
+  }
+  return true;
+}
+
+function getOriginalDesc(item) {
+  if (!item) return "";
+  const found = MOUSE_ITEMS_POOL.find(x => x.id === item.id) || MAPPY_ITEMS_POOL.find(x => x.id === item.id);
+  return found ? found.desc : (item.desc || "");
 }
 
 function itemDisplayName(item) {
@@ -604,11 +792,23 @@ function safeLoad() {
 }
 
 // ── Shared UI ────────────────────────────────────────────────────────
-function StatBar({ value, max, color="#8b5cf6" }) {
-  const pct = Math.min(100, Math.max(0, (value / (max || 1)) * 100));
+function StatBar({ value, max, color="#8b5cf6", lockedPct=0 }) {
+  const finalMax = max || 1;
+  const pct = Math.min(100, Math.max(0, (value / finalMax) * 100));
   return (
-    <div style={{ width:"100%", height:10, background:"rgba(255,255,255,0.1)", borderRadius:999, overflow:"hidden" }}>
+    <div style={{ width:"100%", height:10, background:"rgba(255,255,255,0.1)", borderRadius:999, overflow:"hidden", position:"relative" }}>
       <div style={{ width:pct+"%", height:"100%", background:color, transition:"width 0.3s" }} />
+      {lockedPct > 0 && (
+        <div style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          width: lockedPct + "%",
+          height: "100%",
+          background: "repeating-linear-gradient(45deg, #ef4444, #ef4444 4px, #7f1d1d 4px, #7f1d1d 8px)",
+          opacity: 0.85
+        }} />
+      )}
     </div>
   );
 }
@@ -714,7 +914,7 @@ function ScavengeGame({ luckBonus, onFinish }) {
 }
 
 // ── Battle Overlay ───────────────────────────────────────
-function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSkill, onFlee, setActiveModalInfo }) {
+function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSkill, onFlee, setActiveModalInfo, onShowStats }) {
   const resp = useResponsive();
   const { battle, player, upgrades = {} } = game;
   if (!battle || !battle.enemyQueue) return null;
@@ -724,10 +924,33 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
   const totalEnemies   = battle.enemyQueue.length;
   const defeated       = battle.totalDefeated;
   const battleLog      = battle.log || [];
-  const isBossFight    = totalEnemies >= 15;
+  const isBossFight    = totalEnemies >= 20;
 
-  const unlockedActives  = ALL_ACTIVE_SKILLS.filter(s => (upgrades[s.id] || 0) > 0);
-  const unlockedPassives = ALL_PASSIVE_SKILLS.filter(s => (upgrades[s.id] || 0) > 0);
+  const isFeral = battle.currentForm === "feral";
+  const bondValue = game.bond || 0;
+  const hasUltimate = bondValue >= 50;
+  const ultimateSkill = hasUltimate ? {
+    id: isFeral ? "f_ult" : "h_ult",
+    name: isFeral ? "🐾 Sovereign Claw" : "🌌 Cosmic Eclipse",
+    mpCost: 35,
+    desc: isFeral 
+      ? `Luna unleashes her sovereign power, slashing through nightmares with absolute devotion. Deals high physical impact (+50% dmg from weaved Bond).`
+      : `Luna channels cosmic celestial energy from her deep connection with Alex. Deals heavy magic damage (+50% dmg from weaved Bond).`,
+    isUltimate: true
+  } : null;
+
+  const unlockedActives  = ALL_ACTIVE_SKILLS.filter(s => {
+    const level = upgrades[s.id] || 0;
+    if (level <= 0) return false;
+    return battle.currentForm === "hybrid" ? s.id.startsWith("strong_h") || s.id.startsWith("h") : s.id.startsWith("f");
+  });
+
+  const unlockedPassives = ALL_PASSIVE_SKILLS.filter(s => {
+    const level = upgrades[s.id] || 0;
+    if (level <= 0) return false;
+    return battle.currentForm === "hybrid" ? s.id.startsWith("strong_h") || s.id.startsWith("h") : s.id.startsWith("f");
+  });
+
   const fleeWouldKill    = (player.hp - 25) <= 0;
 
   return (
@@ -738,6 +961,30 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
       padding: resp.isLandscapeMobile ? "8px 10px 10px" : "14px 14px 18px",
       zIndex:1000, fontFamily:"sans-serif", overflowY:"auto", WebkitOverflowScrolling:"touch",
     }}>
+      {/* Absolute positioned stats button in battle overlay */}
+      <div style={{ position: "absolute", top: resp.isLandscapeMobile ? 6 : 14, right: resp.isLandscapeMobile ? 10 : 14, zIndex: 1100 }}>
+        <button
+          onClick={onShowStats}
+          style={{
+            background: "rgba(139, 92, 246, 0.25)",
+            border: "1px solid rgba(139, 92, 246, 0.5)",
+            borderRadius: 8,
+            color: "#e2e8f0",
+            padding: "5px 11px",
+            fontSize: 12,
+            fontFamily: "sans-serif",
+            fontWeight: "bold",
+            cursor: "pointer",
+            boxShadow: "0 0 10px rgba(139,92,246,0.3)",
+            transition: "all 0.2s"
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(139, 92, 246, 0.45)"; e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.7)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(139, 92, 246, 0.25)"; e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.5)"; }}
+        >
+          📊 Stats
+        </button>
+      </div>
+
       <div className="dg-hdr" style={{ textAlign:"center", marginBottom: resp.isLandscapeMobile ? 6 : 12 }}>
         <div style={{ fontSize:11, letterSpacing:5, color: isBossFight ? "#ef4444" : "#6d28d9" }}>
           {isBossFight ? "⚠️ BOSS ENCOUNTER" : "DREAMSCAPE BATTLE"}
@@ -764,7 +1011,33 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
           border:"1px solid " + (enemy.isBoss ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.2)"),
           borderRadius:18, padding:"12px 10px", textAlign:"center",
         }}>
-          <div className="dg-char" style={{ fontSize: resp.isLandscapeMobile ? 34 : (enemy.isBoss ? 48 : 52), lineHeight:1, marginBottom:4 }}>{enemy.ico}</div>
+          {enemy.img ? (
+            <div style={{
+              width: resp.isLandscapeMobile ? 120 : (enemy.isBoss ? 170 : 150),
+              height: resp.isLandscapeMobile ? 120 : (enemy.isBoss ? 170 : 150),
+              margin: "0 auto 10px auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative"
+            }}>
+              <img
+                src={enemy.img}
+                alt={enemy.name}
+                referrerPolicy="no-referrer"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  mixBlendMode: "screen",
+                  filter: "drop-shadow(0 0 10px rgba(167, 139, 250, 0.5))",
+                  display: "block"
+                }}
+              />
+            </div>
+          ) : (
+            <div className="dg-char" style={{ fontSize: resp.isLandscapeMobile ? 34 : (enemy.isBoss ? 48 : 52), lineHeight:1, marginBottom:4 }}>{enemy.ico}</div>
+          )}
           <div style={{ fontWeight:"bold", fontSize:14, color: "#fca5a5", marginBottom:2 }}>
             {enemy.name}
             {enemy.isBoss && <span style={{ fontSize:10, color:"#ef4444", marginLeft:6, letterSpacing:2 }}>BOSS</span>}
@@ -834,16 +1107,31 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
 
         {/* Luna */}
         <div style={{ background:"rgba(109,40,217,0.08)", border:"1px solid rgba(139,92,246,0.25)", borderRadius:18, padding:"12px 10px", textAlign:"center" }}>
-          <div className="dg-char" style={{ fontSize: resp.isLandscapeMobile ? 34 : 52, lineHeight:1, marginBottom:4 }}>🐱</div>
-          <div style={{ fontWeight:"bold", fontSize:14, color:"#c4b5fd", marginBottom:6 }}>Luna (Lvl {player.level || 1})</div>
+          <div className="dg-char" style={{ fontSize: resp.isLandscapeMobile ? 34 : 52, lineHeight:1, marginBottom:4 }}>
+            {battle.currentForm === "hybrid" ? "🔮" : "🐱"}
+          </div>
+          <div style={{ fontWeight:"bold", fontSize:14, color:"#c4b5fd", marginBottom:6 }}>
+            {battle.currentForm === "hybrid" ? "Luna (Hybrid Form)" : "Luna (Feral Form)"}
+            <div style={{ fontSize:11, fontWeight:"normal", opacity:0.8, marginTop:2 }}>Lvl {player.level || 1}</div>
+          </div>
           {battle.dodgeActive && (
             <div style={{ fontSize:11, color:"#a78bfa", marginBottom:5, padding:"1px 7px", background:"rgba(139,92,246,0.15)", borderRadius:8, display:"inline-block" }}>⚡ Dodge Ready</div>
           )}
           {/* HP Reflection Fix (Request 2) */}
-          <div style={{ fontSize:11, color:"#fca5a5", marginBottom:4 }}>❤️ {player.hp} / {totalMaxHp}</div>
+          <div style={{ fontSize:11, color:"#fca5a5", marginBottom:4 }}>❤️ HP: {player.hp} / {totalMaxHp}</div>
           <StatBar value={player.hp} max={totalMaxHp} color="#ef4444" />
-          <div style={{ fontSize:11, color:"#a78bfa", margin:"7px 0 4px" }}>🔮 {player.mp} / {totalMaxMp}</div>
-          <StatBar value={player.mp} max={totalMaxMp} color="#8b5cf6" />
+          
+          {battle.playerShield > 0 ? (
+            <div style={{ marginTop: 6 }}>
+              <div style={{ fontSize:11, color:"#0ea5e9", marginBottom:4, fontWeight:"bold" }}>🛡️ Shield: {battle.playerShield}</div>
+              <StatBar value={battle.playerShield} max={Math.max(20, Math.floor(totalMaxHp * 0.7))} color="#0ea5e9" />
+            </div>
+          ) : null}
+
+          <div style={{ fontSize:11, color:"#a78bfa", margin:"7px 0 4px" }}>
+            {battle.currentForm === "hybrid" ? "🔮 Mana: " : "⚡ Stamina: "}{player.mp} / {totalMaxMp}
+          </div>
+          <StatBar value={player.mp} max={totalMaxMp} color={battle.currentForm === "hybrid" ? "#8b5cf6" : "#fbbf24"} />
         </div>
       </div>
 
@@ -856,9 +1144,67 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
       )}
 
       <div style={{ maxWidth:680, margin:"0 auto", width:"100%" }}>
-        <div style={{ marginBottom:9 }}>
-          <Btn color="#b91c1c" onClick={onAttack}>⚔️ Attack  (ATK {totalAtk})</Btn>
+        <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+          <button onClick={onAttack} style={{
+            flex: 3, background: "#b91c1c", border: "1px solid rgba(239, 68, 68, 0.45)",
+            color: "white", padding: "12px 14px", borderRadius: 12, cursor: "pointer",
+            fontWeight: "bold", fontSize: 15, fontFamily: "sans-serif"
+          }}>
+            ⚔️ Attack
+          </button>
+          <button id="show-battle-stats-btn" onClick={onShowStats} style={{
+            flex: 1, background: "rgba(109, 40, 217, 0.35)", border: "1px solid rgba(139, 92, 246, 0.6)",
+            color: "#ddd6fe", padding: "12px 14px", borderRadius: 12, cursor: "pointer",
+            fontWeight: "bold", fontSize: 13, fontFamily: "sans-serif", display:"flex", alignItems:"center", justifyContent:"center"
+          }}>
+            📊 Stats
+          </button>
         </div>
+
+        {ultimateSkill && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize:11, color:"#f43f5e", letterSpacing:2, marginBottom:6, fontWeight:"800", display:"flex", alignItems:"center", gap:6 }}>
+              <span>🔮 ULTIMATE BOND SKILL (Bond {bondValue}/200)</span>
+            </div>
+            {(() => {
+              const canUse = player.mp >= (ultimateSkill.mpCost || 0);
+              const percentGrown = Math.round((bondValue / 200) * 50);
+              return (
+                <button 
+                  onClick={() => canUse && onSkill(ultimateSkill)} 
+                  disabled={!canUse} 
+                  style={{
+                    width: "100%",
+                    background: canUse 
+                      ? "linear-gradient(135deg, rgba(220, 38, 38, 0.3) 0%, rgba(139, 92, 246, 0.35) 100%)" 
+                      : "rgba(50,50,50,0.18)",
+                    border: "2px solid " + (canUse ? "#f43f5e" : "rgba(255,255,255,0.06)"),
+                    borderRadius: 12, 
+                    padding: "11px 14px",
+                    color: canUse ? "#ffffff" : "#555",
+                    cursor: canUse ? "pointer" : "not-allowed",
+                    textAlign: "left", 
+                    fontFamily: "sans-serif",
+                    boxShadow: canUse ? "0 0 16px rgba(244, 63, 94, 0.4)" : "none",
+                    transition: "all 0.15s ease-in-out"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+                    <div style={{ fontWeight: "800", fontSize: 14, color: canUse ? "#fef08a" : "#aaa" }}>{ultimateSkill.name}</div>
+                    <div style={{ fontSize: 11, color: "#cbd5e1" }}>Scaling: +{percentGrown}% dmg</div>
+                  </div>
+                  <div style={{ fontSize: 11, display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
+                    <span style={{ background: canUse ? "rgba(244, 63, 94, 0.4)" : "rgba(80,80,80,0.3)", padding: "1px 7px", borderRadius: 8, color: "#fecdd3", fontWeight: "bold" }}>
+                      🔮 {ultimateSkill.mpCost} MP
+                    </span>
+                    <span style={{ color: "#a5b4fc", fontSize: 10, fontWeight: "800", background: "rgba(165,180,252,0.15)", padding: "1px 6px", borderRadius: 6 }}>★ ULTIMATE ★</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: canUse ? "#e2e8f0" : "#444", lineHeight: 1.4 }}>{ultimateSkill.desc}</div>
+                </button>
+              );
+            })()}
+          </div>
+        )}
 
         {unlockedActives.length > 0 && (
           <>
@@ -931,7 +1277,7 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
 // ── Void Screen ───────────────────────────────────────────
 function VoidScreen({ 
   game, totalMaxHp, totalMaxMp, onReenter, onFleeNight, onSleepMorning, 
-  buyItem, useItem, equipItem, unequipItem, hasMaxForgedItem 
+  buyItem, useItem, equipItem, unequipItem, hasMaxForgedItem, onReroll
 }) {
   const resp = useResponsive();
   const [activeTab, setActiveTab] = React.useState("shops"); // "shops" or "bag"
@@ -1026,6 +1372,14 @@ function VoidScreen({
 
             {shopTab === "mouse" ? (
               <div style={{ display:"grid", gap:8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(139,92,246,0.08)", padding: "10px 12px", borderRadius: 12, border: "1px dashed rgba(139,92,246,0.25)", marginBottom: 4 }}>
+                  <div style={{ fontSize: 11, color: "#cbd5e1" }}>
+                    🔄 Re-roll Mouse Stock (Cost: <strong style={{ color: "#fbbf24" }}>🪙10</strong>)
+                  </div>
+                  <button onClick={() => onReroll && onReroll("mouse")} style={{ background: "#7c3aed", border: "none", color: "white", padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontWeight: "bold", fontSize: 11, fontFamily: "sans-serif" }}>
+                    Re-roll
+                  </button>
+                </div>
                 {dailyMouseItems.length === 0 ? (
                   <div style={{ textAlign:"center", fontSize:12, color:"#9ca3af", padding:"10px 0" }}>Mouse has nothing in stock today.</div>
                 ) : (
@@ -1086,6 +1440,14 @@ function VoidScreen({
               </div>
             ) : (
               <div style={{ display:"grid", gap:8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(245,158,11,0.08)", padding: "10px 12px", borderRadius: 12, border: "1px dashed rgba(245,158,11,0.25)", marginBottom: 4 }}>
+                  <div style={{ fontSize: 11, color: "#cbd5e1" }}>
+                    🔄 Re-roll Mappy Stock (Cost: <strong style={{ color: "#fbbf24" }}>🪙10</strong>)
+                  </div>
+                  <button onClick={() => onReroll && onReroll("mappy")} style={{ background: "#b45309", border: "none", color: "white", padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontWeight: "bold", fontSize: 11, fontFamily: "sans-serif" }}>
+                    Re-roll
+                  </button>
+                </div>
                 {dailyMappyItems.length === 0 ? (
                   <div style={{ textAlign:"center", fontSize:12, color:"#9ca3af", padding:"10px 0" }}>Mappy has nothing in stock today.</div>
                 ) : (
@@ -1156,16 +1518,40 @@ function VoidScreen({
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(110px, 1fr))", gap:6 }}>
                 {["weapon", "accessory", "aura", "body_armor", "paw_gloves", "tail_enhancements", "head_gear"].map(slot => {
                   const gear = equipped[slot];
+                  const isSlotLocked = game.battle?.lockedSlots?.includes(slot);
                   return (
-                    <div key={slot} style={{ background:"rgba(0,0,0,0.3)", padding:6, borderRadius:10, textAlign:"center", border:"1px solid rgba(6,182,212,0.1)" }}>
-                      <div style={{ fontSize:9, color:"#a78bfa", textTransform:"uppercase", marginBottom:4, fontWeight:"bold" }}>{slot.replace("_", " ")}</div>
+                    <div key={slot} style={{
+                      background: isSlotLocked ? "rgba(127, 29, 29, 0.4)" : "rgba(0,0,0,0.3)",
+                      padding: 6,
+                      borderRadius: 10,
+                      textAlign: "center",
+                      border: isSlotLocked ? "1px solid rgba(239, 68, 68, 0.5)" : "1px solid rgba(6,182,212,0.1)",
+                      position: "relative"
+                    }}>
+                      <div style={{ fontSize:9, color: isSlotLocked ? "#ef4444" : "#a78bfa", textTransform:"uppercase", marginBottom:4, fontWeight:"bold" }}>
+                        {slot.replace("_", " ")} {isSlotLocked && "🔒"}
+                      </div>
                       {gear ? (
                         <div>
-                          <div style={{ fontSize:10, fontWeight:"bold", overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:1, WebkitBoxOrient:"vertical" }}>{gear.ico} {itemDisplayName(gear)}</div>
-                          <button 
-                            onClick={() => unequipItem(slot, gear)}
-                            style={{ background:"rgba(220,38,38,0.25)", border:"none", color:"#fca5a5", padding:"2px 6px", borderRadius:6, fontSize:9, marginTop:4, cursor:"pointer" }}
-                          >Unequip</button>
+                          <div style={{
+                            fontSize:10,
+                            fontWeight:"bold",
+                            opacity: isSlotLocked ? 0.5 : 1,
+                            textDecoration: isSlotLocked ? "line-through" : "none",
+                            overflow:"hidden",
+                            textOverflow:"ellipsis",
+                            display:"-webkit-box",
+                            WebkitLineClamp:1,
+                            WebkitBoxOrient:"vertical"
+                          }}>{gear.ico} {itemDisplayName(gear)}</div>
+                          {isSlotLocked ? (
+                            <div style={{ fontSize:9, color: "#f87171", fontWeight: "bold", marginTop: 4 }}>STATS NULLED</div>
+                          ) : (
+                            <button 
+                              onClick={() => unequipItem(slot, gear)}
+                              style={{ background:"rgba(220,38,38,0.25)", border:"none", color:"#fca5a5", padding:"2px 6px", borderRadius:6, fontSize:9, marginTop:4, cursor:"pointer" }}
+                            >Unequip</button>
+                          )}
                         </div>
                       ) : (
                         <div style={{ fontSize:10, opacity:0.3, padding:"4px 0" }}>Empty</div>
@@ -1336,7 +1722,7 @@ function SkillTreeModal({ game, onClose, onUpgrade, currentTier, showBond }) {
             <span style={{ color:currentTier.color, fontWeight:"bold", fontSize:13 }}>{currentTier.label}</span>
             <span style={{ fontSize:12, color:"#a78bfa" }}>{game.mood} / 1500</span>
           </div>
-          <StatBar value={game.mood} max={1500} color={currentTier.color} />
+          <StatBar value={game.mood} max={1500} color={currentTier.color} lockedPct={(isBattle && game.battle?.enemyQueue?.some(e => e.id === "apnea")) ? 5 : 0} />
           {showBond && (
             <div style={{ marginTop:10 }}>
               <div style={{ fontSize:12, color:"#f472b6", marginBottom:4 }}>💖 Bond: {game.bond} / 200</div>
@@ -1350,12 +1736,454 @@ function SkillTreeModal({ game, onClose, onUpgrade, currentTier, showBond }) {
   );
 }
 
+// ── Keeper of dreams Modal ──
+function KeeperOfDreamsModal({ game, onClose, onReward }) {
+  const [selectedSec, setSelectedSec] = React.useState(null);
+  const [nodes, setNodes] = React.useState([]);
+  const [synapsesDone, setSynapsesDone] = React.useState(0);
+  const [feedbackCount, setFeedbackCount] = React.useState(0);
+  const [probeResult, setProbeResult] = React.useState(null); // "success" or "fail" or null
+
+  const sectors = [
+    { id: "hypothalamus", name: "Hypothalamus Sector", detail: "Vitality Sync", desc: "Regulates physical energy, survival signals, and core balance.", rewardDesc: "+15 Permanent Max HP & +100 Coins 🪙" },
+    { id: "amygdala", name: "Amygdala Sector", detail: "Fear Dissipation", desc: "Processes acute threat response and fear conditioning.", rewardDesc: "+150 Coins 🪙 & +150 XP" },
+    { id: "pineal", name: "Pineal Gland Sector", detail: "Dreamweaver Engine", desc: "Directs internal alignment, spiritual resonance, and core essence.", rewardDesc: "+10 Dream Shards 💎" },
+    { id: "brainstem", name: "Brainstem Sector", detail: "Reflex Alignment", desc: "Maintains raw baseline signals, heartbeat, and reflex channels.", rewardDesc: "+10 Permanent Max MP & +150 Coins 🪙" },
+    { id: "prefrontal", name: "Prefrontal Cortex Sector", detail: "Cognitive Integration", desc: "Orchestrates decision making, complex thought formulas, and willpower.", rewardDesc: "+300 XP 🌟" },
+    { id: "forebrain", name: "Basal Forebrain Sector", detail: "Arousal Harmony", desc: "Supports mental wakefulness and triggers relational bonds.", rewardDesc: "+15 Bond Points 💖" },
+  ];
+
+  const eligible = game.day > 14;
+
+  const startMission = (sec) => {
+    setSelectedSec(sec);
+    // Generate 12 nodes: (dormant, aligned, pulse, feedback)
+    setNodes(Array(12).fill(0).map(() => ({ state: "dormant" })));
+    setSynapsesDone(0);
+    setFeedbackCount(0);
+    setProbeResult(null);
+  };
+
+  const handleNodeClick = (idx) => {
+    if (probeResult !== null || nodes[idx].state !== "dormant") return;
+
+    // Determine result of activating this node
+    // 60% chance to align, 20% high energy, 20% feedback
+    const rand = Math.random();
+    let newState = "aligned";
+    if (rand < 0.20) {
+      newState = "feedback";
+    } else if (rand < 0.40) {
+      newState = "pulse";
+    }
+
+    const nextNodes = [...nodes];
+    nextNodes[idx] = { state: newState };
+    setNodes(nextNodes);
+
+    let nextSynapses = synapsesDone;
+    let nextFeedback = feedbackCount;
+
+    if (newState === "aligned" || newState === "pulse") {
+      nextSynapses += 1;
+      setSynapsesDone(nextSynapses);
+    } else {
+      nextFeedback += 1;
+      setFeedbackCount(nextFeedback);
+    }
+
+    if (nextSynapses >= 5) {
+      setProbeResult("success");
+      onReward(selectedSec.id);
+    } else if (nextFeedback >= 3) {
+      setProbeResult("fail");
+    }
+  };
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.9)", display:"flex", alignItems:"center", justifyContent:"center", padding:20, zIndex:1010, fontFamily:"sans-serif", overflowY:"auto" }}>
+      <div style={{ width:"100%", maxWidth:490, background:"#0b001a", border:"1px solid rgba(139,92,246,0.55)", borderRadius:24, padding:24, position:"relative" }}>
+        
+        {/* Banner */}
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+          <span style={{ fontSize:32 }}>🌌</span>
+          <div>
+            <div style={{ fontSize:19, fontWeight:"bold", color:"#ddd6fe" }}>The Keeper of Dreams</div>
+            <div style={{ fontSize:12, color:"#a78bfa" }}>Neural Portals & Memory Reconstruction</div>
+          </div>
+        </div>
+
+        {!eligible ? (
+          <div>
+            <div style={{ background:"rgba(139,92,246,0.06)", border:"1px solid rgba(139,92,246,0.25)", borderRadius:16, padding:20, textAlign:"center", lineHeight:1.8, color:"#cbd5e1" }}>
+              <div style={{ fontSize:40, marginBottom:12 }}>🔮</div>
+              <p style={{ fontSize:14, marginBottom:8 }}>
+                "Weaver of paths, your neural cortex is still adjusting to the pressure of the violet Dreamscape..."
+              </p>
+              <p style={{ fontSize:13, color:"#a78bfa" }}>
+                <strong>Neural Sectors</strong> unlock completely after <strong>Day 14</strong>. Return on Day 15 to perform daily quests into Alex's brain sectors.
+              </p>
+            </div>
+            <button onClick={onClose} style={{ width:"100%", background:"#4338ca", border:"none", color:"white", padding:"12px", borderRadius:14, marginTop:18, cursor:"pointer", fontWeight:"bold" }}>
+              Leave the Dream Portal
+            </button>
+          </div>
+        ) : !selectedSec ? (
+          <div>
+            <div style={{ fontSize:13, color:"#cbd5e1", marginBottom:14, lineHeight:1.6 }}>
+              Choose a specific brain sector of Alex's mind to reconstruct. Probing synapses successfully yields valuable mental resonance and real rewards once per day.
+            </div>
+
+            <div style={{ display:"grid", gap:8, maxHeight:300, overflowY:"auto", paddingRight:4, marginBottom:18 }}>
+              {sectors.map(sec => (
+                <div key={sec.id} style={{
+                  background: "rgba(109,40,217,0.06)",
+                  border: "1px solid rgba(139,92,246,0.2)",
+                  borderRadius:14, padding:12, display:"flex", justifyContent:"space-between", alignItems:"center", gap:10
+                }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontWeight:"bold", color:"#ddd6fe", fontSize:13 }}>
+                      🧠 {sec.name} <span style={{ fontSize:10, color:"#9ca3af", fontWeight:"normal" }}>({sec.detail})</span>
+                    </div>
+                    <div style={{ fontSize:11, color:"#c4b5fd", marginTop:2 }}>{sec.desc}</div>
+                    <div style={{ fontSize:11, color:"#6ee7b7", fontWeight:"bold", marginTop:4 }}>Reward: {sec.rewardDesc}</div>
+                  </div>
+                  <button onClick={() => startMission(sec)} style={{
+                    background:"#5b21b6", border:"none", color:"white", padding:"6px 12px", borderRadius:8, cursor:"pointer", fontSize:11, fontWeight:"bold"
+                  }}>
+                    Probe
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={onClose} style={{ width:"100%", background:"rgba(255,255,255,0.08)", border:"none", color:"#9ca3af", padding:"12px", borderRadius:14, cursor:"pointer" }}>
+              Close
+            </button>
+          </div>
+        ) : (
+          <div>
+            {/* Active Probe Session */}
+            <div style={{ marginBottom:14 }}>
+              <div style={{ fontSize:12, color:"#a78bfa", textTransform:"uppercase", letterSpacing:1 }}>Neural Sector in Focus</div>
+              <div style={{ fontSize:18, fontWeight:"bold", color:"#ddd6fe" }}>🧠 {selectedSec.name}</div>
+            </div>
+
+            {probeResult === null ? (
+              <div>
+                <p style={{ fontSize:12, color:"#c4b5fd", marginBottom:12, lineHeight:1.5 }}>
+                  Click synaptic nodes below to synchronize them. Align <strong>5 synapses</strong> before triggering <strong>3 neural feedback anomalies (⚠️)</strong>!
+                </p>
+
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:18 }}>
+                  {nodes.map((node, idx) => {
+                    let bg = "rgba(109,40,217,0.18)";
+                    let border = "1px solid rgba(139,92,246,0.3)";
+                    let content = "●";
+                    let color = "#cbd5e1";
+
+                    if (node.state === "aligned") {
+                      bg = "rgba(16,185,129,0.15)";
+                      border = "1px solid rgb(16,185,129)";
+                      content = "❇️";
+                    } else if (node.state === "pulse") {
+                      bg = "rgba(14,165,233,0.15)";
+                      border = "1px solid rgb(14,165,233)";
+                      content = "⚡";
+                    } else if (node.state === "feedback") {
+                      bg = "rgba(239,68,68,0.18)";
+                      border = "1px solid rgb(239,68,68)";
+                      content = "⚠️";
+                    }
+
+                    return (
+                      <button key={idx} onClick={() => handleNodeClick(idx)} style={{
+                        aspectRatio:"1", borderRadius:12, display:"flex", alignItems:"center", justifyContent:"center",
+                        background: bg, border: border, color: color, fontSize:15, cursor: node.state === "dormant" ? "pointer" : "default"
+                      }}>
+                        {content}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div style={{ display: "flex", justifyContent:"space-between", fontSize:12, background:"rgba(0,0,0,0.3)", padding:"10px 14px", borderRadius:12, border:"1px solid rgba(255,255,255,0.05)" }}>
+                  <div>Aligned Synapses: <strong style={{ color:"#10b981" }}>{synapsesDone} / 5</strong></div>
+                  <div>Feedback Anomalies: <strong style={{ color:"#ef4444" }}>{feedbackCount} / 3</strong></div>
+                </div>
+              </div>
+            ) : probeResult === "success" ? (
+              <div style={{ textAlign:"center", padding:"10px 0" }}>
+                <div style={{ fontSize:40, marginBottom:10 }}>💎✨</div>
+                <div style={{ fontSize:18, fontWeight:"bold", color:"#10b981", marginBottom:8 }}>Sector Synchronized!</div>
+                <p style={{ fontSize:13, color:"#cbd5e1", marginBottom:14 }}>
+                  You have reconstructed the <strong>{selectedSec.name}</strong> neural structures for today. Alex's brainwaves hum with supreme clarity!
+                </p>
+                <div style={{ background:"rgba(16,185,129,0.09)", border:"1px dashed rgba(16,185,129,0.35)", padding:12, borderRadius:12, marginBottom:18 }}>
+                  <div style={{ fontSize:11, color:"#a78bfa" }}>ACQUIRED RESONANCE</div>
+                  <div style={{ fontSize:13, fontWeight:"bold", color:"#6ee7b7", marginTop:2 }}>{selectedSec.rewardDesc}</div>
+                </div>
+                <button onClick={onClose} style={{ width:"100%", background:"#10b981", border:"none", color:"white", padding:"11px", borderRadius:12, cursor:"pointer", fontWeight:"bold" }}>
+                  Acknowledge & Exit
+                </button>
+              </div>
+            ) : (
+              <div style={{ textAlign:"center", padding:"10px 0" }}>
+                <div style={{ fontSize:40, marginBottom:10 }}>🌩️🗯️</div>
+                <div style={{ fontSize:18, fontWeight:"bold", color:"#ef4444", marginBottom:8 }}>Synchronization Overload!</div>
+                <p style={{ fontSize:13, color:"#cbd5e1", marginBottom:14 }}>
+                  The synapses triggered a cascade of nested anomalies. The mind probe disconnected.
+                </p>
+                <div style={{ display:"flex", gap:10 }}>
+                  <button onClick={() => startMission(selectedSec)} style={{ flex:1, background:"#7c3aed", border:"none", color:"white", padding:"11px", borderRadius:12, cursor:"pointer", fontWeight:"bold" }}>
+                    Retry Probe
+                  </button>
+                  <button onClick={() => setSelectedSec(null)} style={{ flex:1, background:"rgba(255,255,255,0.08)", border:"none", color:"#9ca3af", padding:"11px", borderRadius:12, cursor:"pointer" }}>
+                    Select Other
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────
 export default function DreamGuardian() {
   const resp = useResponsive();
   const [game, setGame]                 = useState(safeLoad);
   const [activeModalInfo, setActiveModalInfo] = useState(null);
-  const [showIntro, setShowIntro]       = useState(true);
+  const [activeStoryAct, setActiveStoryAct] = useState(null);
+  const [activeOverlay, setActiveOverlay] = useState(null);
+
+  // Trigger Prologue on fresh game (no prologue shown in save state)
+  useEffect(() => {
+    if (!game.shownActs || !game.shownActs.includes("prologue")) {
+      setActiveStoryAct("prologue");
+    }
+  }, [game.shownActs]);
+
+  function handleContinueStoryAct() {
+    if (!activeStoryAct) return;
+    const currentAct = activeStoryAct;
+    setGame(g => {
+      const shown = g.shownActs || [];
+      if (!shown.includes(currentAct)) {
+        return {
+          ...g,
+          shownActs: [...shown, currentAct]
+        };
+      }
+      return g;
+    });
+    setActiveStoryAct(null);
+  }
+
+  function triggerOverlay(overlay, category) {
+    setActiveOverlay(overlay);
+    setGame(g => {
+      const p = { ...g.player };
+      let newBond = g.bond;
+      
+      // Grant rewards for milestones
+      if (overlay.id === "guardian_lvl3") {
+        p.coins += 50;
+        p.shards = (p.shards || 0) + 3;
+      } else if (overlay.id === "guardian_lvl5") {
+        p.coins += 100;
+        p.shards = (p.shards || 0) + 5;
+      } else if (overlay.id === "guardian_lvl10") {
+        p.coins += 200;
+        p.shards = (p.shards || 0) + 10;
+      } else if (overlay.id === "bond_lvl50") {
+        p.coins += 50;
+        p.shards = (p.shards || 0) + 2;
+      } else if (overlay.id === "bond_lvl150") {
+        p.coins += 150;
+        p.shards = (p.shards || 0) + 10;
+      } else if (overlay.id === "max_forge") {
+        p.coins += 100;
+        p.shards = (p.shards || 0) + 5;
+      } else if (overlay.id === "first_victory") {
+        p.maxHp = (p.maxHp || 100) + 5;
+        p.hp = (p.hp || 100) + 5;
+      } else if (overlay.id === "day5_dawn") {
+        p.maxMp = (p.maxMp || 40) + 5;
+        p.mp = (p.mp || 40) + 5;
+      } else if (overlay.id === "day10_dawn") {
+        p.shards = (p.shards || 0) + 3;
+        p.coins += 200;
+      } else if (overlay.id === "day15_dawn") {
+        p.shards = (p.shards || 0) + 5;
+        newBond = Math.min(200, newBond + 10);
+      }
+
+      const shownA = g.shownAchievements || [];
+      const shownP = g.shownPayoffs || [];
+      
+      return {
+        ...g,
+        player: p,
+        bond: newBond,
+        shownAchievements: category === "achievement" ? [...shownA, overlay.id] : shownA,
+        shownPayoffs: category === "payoff" ? [...shownP, overlay.id] : shownP,
+      };
+    });
+  }
+
+  function handleCloseOverlay() {
+    setActiveOverlay(null);
+  }
+
+  // Monitor game state changes to trigger Achievements & Emotional Payoff cutscenes (Part 6, #10)
+  useEffect(() => {
+    if (!game) return;
+    if (activeOverlay) return; // Prevent overlapping triggers, handle sequentially
+
+    const shownAchievements = game.shownAchievements || [];
+    const shownPayoffs = game.shownPayoffs || [];
+
+    // --- ACHIEVEMENTS CHECK ---
+    if (game.player.level >= 3 && !shownAchievements.includes("guardian_lvl3")) {
+      triggerOverlay({
+        id: "guardian_lvl3",
+        category: "achievement",
+        title: "🏆 Achievement: Resilient Soul",
+        subtitle: "Character Level 3 reached",
+        banner: "🦁✨",
+        color: "#c084fc",
+        text: "Your spirit grows stronger as your levels increase, unlocking higher skill potential and sturdier health. The Dreamscape nightmares whisper your name in worry!",
+        bonus: "🎉 Received bonus: +50 Coins 🪙 & +3 Dream Shards 💎!"
+      }, "achievement");
+      return;
+    }
+    if (game.player.level >= 5 && !shownAchievements.includes("guardian_lvl5")) {
+      triggerOverlay({
+        id: "guardian_lvl5",
+        category: "achievement",
+        title: "🏆 Achievement: Advanced Astral Sentinel",
+        subtitle: "Character Level 5 reached",
+        banner: "🌌🦁",
+        color: "#60a5fa",
+        text: "You have harnessed the deep currents of the Dreamscape. Your presence shines brighter, casting away intermediate shades of distress.",
+        bonus: "🎉 Received bonus: +100 Coins 🪙 & +5 Dream Shards 💎!"
+      }, "achievement");
+      return;
+    }
+    if (game.player.level >= 10 && !shownAchievements.includes("guardian_lvl10")) {
+      triggerOverlay({
+        id: "guardian_lvl10",
+        category: "achievement",
+        title: "🏆 Achievement: Legendary Ascended Guardian",
+        subtitle: "Character Level 10 reached",
+        banner: "💫👑💫",
+        color: "#f43f5e",
+        text: "You are the absolute master of the bedtime protector domain. The entities of despair wither at your sight.",
+        bonus: "🎉 Received bonus: +200 Coins 🪙 & +10 Dream Shards 💎!"
+      }, "achievement");
+      return;
+    }
+    if (game.bond >= 50 && !shownAchievements.includes("bond_lvl50")) {
+      triggerOverlay({
+        id: "bond_lvl50",
+        category: "achievement",
+        title: "🏆 Achievement: Faithful Companion",
+        subtitle: "Affection reaches 50+",
+        banner: "💖🐱",
+        color: "#ec4899",
+        text: "Your daily talk, scavenges, and night watches have nurtured a deep, unbreakable trust. Alex is beginning to notice your relentless presence.",
+        bonus: "🎉 Received bonus: +50 Coins 🪙 & +2 Dream Shards 💎!"
+      }, "achievement");
+      return;
+    }
+    if (game.bond >= 150 && !shownAchievements.includes("bond_lvl150")) {
+      triggerOverlay({
+        id: "bond_lvl150",
+        category: "achievement",
+        title: "🏆 Achievement: Soulbound Sentinel",
+        subtitle: "Affection reaches 150+ (Soulbound)",
+        banner: "♾️💞",
+        color: "#f43f5e",
+        text: "Your devotion to Alex has transcended standard animal companionship. You are now a living beacon of absolute light in their subconscious dream, granting permanent double rewards on flawless nights!",
+        bonus: "🎉 Received bonus: +150 Coins 🪙 & +10 Dream Shards 💎!"
+      }, "achievement");
+      return;
+    }
+    const equippedOrInvMaxed = Object.values(game.equipped || {}).some(item => item && (item.forgeLevel || 0) >= 5) ||
+                               (game.inventory || []).some(item => (item.forgeLevel || 0) >= 5);
+    if (equippedOrInvMaxed && !shownAchievements.includes("max_forge")) {
+      triggerOverlay({
+        id: "max_forge",
+        category: "achievement",
+        title: "🏆 Achievement: Mythic Arsenal",
+        subtitle: "Any equipment forged to +5",
+        banner: "🔨🔥",
+        color: "#34d399",
+        text: "You have successfully forged a piece of dream gear to its maximum baseline of +5! The celestial blacksmith bows in respect.",
+        bonus: "🎉 Received bonus: +100 Coins 🪙 & +5 Dream Shards 💎!"
+      }, "achievement");
+      return;
+    }
+
+    // --- EMOTIONAL PAYOFF CHECK ---
+    const totalBattles = (game.battleHistory || []).length || (game.totalBattlesCount || 0);
+    if (totalBattles > 0 && !shownPayoffs.includes("first_victory") && game.phase === "day") {
+      triggerOverlay({
+        id: "first_victory",
+        category: "payoff",
+        title: "🌅 A Glimmer of Peace",
+        subtitle: "Your first victory's morning",
+        banner: "🥛🐱🌸",
+        color: "#34d399",
+        text: "This morning, Alex woke up without immediately gasping for air. The alarm rang, and for the first time in weeks, they didn't hit snooze with a heavy sigh.\n\nAs they sat on the edge of the bed, they looked down at you, smiled with soft sleepy eyes, and gave a warm, loving scratch between your ears. \n\nIt is a small step, but your silent vigilance in the Dreamscape is working. Alex slept peacefully tonight because you were there.",
+        bonus: "💖 Luna's dedication warms Alex's heart. Max HP increased (+5 permanent)!"
+      }, "payoff");
+      return;
+    }
+    if (game.day >= 5 && !shownPayoffs.includes("day5_dawn") && game.phase === "day") {
+      triggerOverlay({
+        id: "day5_dawn",
+        category: "payoff",
+        title: "☕ Singing in the Kitchen",
+        subtitle: "Day 5 Dawn",
+        banner: "🥞🎵🐱",
+        color: "#60a5fa",
+        text: "Today, the untouched breakfast bowl is finally empty! Alex actually cooked pancakes and made hot coffee, hum-singing a quiet melody that you haven't heard since they got sick.\n\nThe dark circles under their eyes are visibly softening, replaced by a restful clarity. Your silent battles under the bed have given them back their precious morning energy.",
+        bonus: "💖 Alex's stress is lifting. Max MP increased (+5 permanent)!"
+      }, "payoff");
+      return;
+    }
+    if (game.day >= 10 && !shownPayoffs.includes("day10_dawn") && game.phase === "day") {
+      triggerOverlay({
+        id: "day10_dawn",
+        category: "payoff",
+        title: "✨ The Returning Glow",
+        subtitle: "Day 10 Dawn",
+        banner: "☀️🧹🐟",
+        color: "#a78bfa",
+        text: "Sunlight floods the living room, painting the warm floorboards in gold. Alex opens the window to let the fresh morning air in.\n\nThey laugh out loud as you chase a stray dust mote in the light column, lifting you up for a long, warm squeeze. 'You're my little hero, aren't you, Luna?' they whisper. \n\nThey don't see the scratches from the nightmare claws you carry, but they feel the protective safety you've woven around their heart.",
+        bonus: "💖 Your unspoken bond is eternal. Obtained 3x Dream Shards 💎 and +200 Coins 🪙!"
+      }, "payoff");
+      return;
+    }
+    if (game.day >= 15 && !shownPayoffs.includes("day15_dawn") && game.phase === "day") {
+      triggerOverlay({
+        id: "day15_dawn",
+        category: "payoff",
+        title: "🌸 Radiant Sanctuary",
+        subtitle: "Day 15 Dawn",
+        banner: "🌳🏡💖",
+        color: "#ec4899",
+        text: "The apartment is transformed. Nightmare shadows no longer cling to the corners. Alex has had consecutive nights of peaceful, restorative sleep.\n\nThey started exercising again, journaling, and talking to their friends on the phone with a high, joyful voice. You curl up on their lap as they read, purring so deeply the couch vibrates. \n\nYou have succeeded. The Dreamscape portal beneath the bed remains, but it has met its match. Together, you are invincible.",
+        bonus: "💖 Complete harmony achieved. Obtained 5x Dream Shards 💎 & +10 Bond 💖!"
+      }, "payoff");
+      return;
+    }
+  }, [game, activeOverlay]);
+
   const [showSettings, setShowSettings] = useState(false);
   const [showUpgrade, setShowUpgrade]   = useState(false);
   const [showScavenge, setShowScavenge] = useState(false);
@@ -1364,6 +2192,8 @@ export default function DreamGuardian() {
   const [merchantTab, setMerchantTab]   = useState("mouse");
   const [invOpen, setInvOpen]           = useState(false);
   const [eqOpen, setEqOpen]             = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showKeeperModal, setShowKeeperModal] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -1383,17 +2213,91 @@ export default function DreamGuardian() {
       }, {});
   }, [game.equipped]);
 
-  const totalAtk   = game.player.atk   + (equippedStats.atk   || 0) + (game.upgrades && game.upgrades.f1 ? getSkillStats(5, game.upgrades.f1).power : 0);
-  const totalMaxMp = game.player.maxMp  + (equippedStats.maxMp || 0) + (game.upgrades && game.upgrades.h8 ? getSkillStats(25, game.upgrades.h8).power : 0);
+  const isBattle = !!game.battle;
+  const currentForm = game.battle?.currentForm || "feral";
+  const activeUpgrades = useMemo(() => {
+    const list = game.upgrades || {};
+    if (!isBattle) return list;
+    return Object.fromEntries(
+      Object.entries(list).filter(([k]) => {
+        return currentForm === "feral" ? k.startsWith("f") : k.startsWith("h");
+      })
+    );
+  }, [game.upgrades, isBattle, currentForm]);
+
+  let totalAtk   = game.player.atk   + (equippedStats.atk   || 0) + (activeUpgrades.f1 ? getSkillStats(5, activeUpgrades.f1).power : 0);
+  if (isBattle && game.battle?.fixationTurns > 0) {
+    totalAtk = Math.max(1, Math.floor(totalAtk * 0.70));
+  }
+  const totalMaxMp = game.player.maxMp  + (equippedStats.maxMp || 0) + (activeUpgrades.h8 ? getSkillStats(25, activeUpgrades.h8).power : 0);
   const totalMaxHp = game.player.maxHp  + (equippedStats.maxHp || 0);
   const currentTier = useMemo(() => getMoodDetails(game.mood), [game.mood]);
 
   const luckBonus = useMemo(() => {
-    const lv = (game.upgrades && game.upgrades.f9) || 0;
+    const lv = activeUpgrades.f9 || 0;
     return lv > 0 ? getSkillStats(15, lv).power : 0;
-  }, [game.upgrades]);
+  }, [activeUpgrades]);
 
   const unlockedSkillCount = Object.keys(game.upgrades || {}).length;
+
+  // Compute all detailed player and equipment stats for the Stats overlay
+  const f1Lvl = activeUpgrades.f1 || 0;
+  const skillAtk = f1Lvl > 0 ? getSkillStats(5, f1Lvl).power : 0;
+  const f3Lvl = activeUpgrades.f3 || 0;
+  const skillSpeed = f3Lvl > 0 ? getSkillStats(3, f3Lvl).power : 0;
+  const spdPower = skillSpeed + (equippedStats.speed || 0);
+  const f4Lvl = activeUpgrades.f4 || 0;
+  const skillCrit = f4Lvl > 0 ? getSkillStats(5, f4Lvl).power : 0;
+  const f6Lvl = activeUpgrades.f6 || 0;
+  const skillDef = f6Lvl > 0 ? getSkillStats(4, f6Lvl).power : 0;
+  const f7Lvl = activeUpgrades.f7 || 0;
+  const skillVamp = f7Lvl > 0 ? getSkillStats(2, f7Lvl).power : 0;
+  const vampPower = skillVamp + (equippedStats.vamp || 0);
+  const f9Lvl = activeUpgrades.f9 || 0;
+  const skillLuck = f9Lvl > 0 ? getSkillStats(15, f9Lvl).power : 0;
+  const luckPower = skillLuck + (equippedStats.luck || 0);
+  const f10Lvl = activeUpgrades.f10 || 0;
+  const skillStam = f10Lvl > 0 ? getSkillStats(20, f10Lvl).power : 0;
+  const h2Lvl = activeUpgrades.h2 || 0;
+  const skillRegen = h2Lvl > 0 ? getSkillStats(5, h2Lvl).power : 0;
+  const h4Lvl = activeUpgrades.h4 || 0;
+  const skillMDef = h4Lvl > 0 ? getSkillStats(4, h4Lvl).power : 0;
+  const h5Lvl = activeUpgrades.h5 || 0;
+  const skillPen = h5Lvl > 0 ? getSkillStats(4, h5Lvl).power : 0;
+  const penPower = skillPen + (equippedStats.pen || 0);
+  const h8Lvl = activeUpgrades.h8 || 0;
+  const skillMaxMp = h8Lvl > 0 ? getSkillStats(25, h8Lvl).power : 0;
+  const h10Lvl = activeUpgrades.h10 || 0;
+  const skillExpBonus = h10Lvl > 0 ? getSkillStats(1, h10Lvl).power : 0;
+
+  // New specific Feral/Hybrid mechanics variables for displays:
+  const feralMovementSpeed = 10 + (activeUpgrades.f3 || 0) * 4;
+  const feralEvasion = 1.0 + (activeUpgrades.f3 || 0) * 0.15;
+  const feralDodgeChance = Math.floor((feralMovementSpeed * 1.5) * feralEvasion);
+  const feralAttackSpeed = 100 + (activeUpgrades.f10 || 0) * 15;
+  const feralMultiStrikeChance = Math.min(60, 10 + (activeUpgrades.f10 || 0) * 12);
+
+  const hybridDef = Math.floor(skillMDef * 1.5);
+  const hybridShieldAmount = Math.floor(hybridDef * 0.7);
+  const hybridResistancePercent = 2.5 * hybridDef;
+  const mpRechargePerTurn = 1 + (activeUpgrades.h2 ? 3 : 0);
+
+  const equipDr = equippedStats.dr || 0;
+  const equipThorns = equippedStats.thorns || 0;
+
+  const hasSpindle = Object.values(game.equipped || {}).some(item => item && (item.id === "spindle" || (item.name && item.name.toLowerCase().includes("spindle"))));
+  let attackSpeed = 100;
+  if (hasSpindle) {
+    const item = Object.values(game.equipped || {}).find(item => item && (item.id === "spindle" || (item.name && item.name.toLowerCase().includes("spindle"))));
+    const stars = item ? (item.forgeLevel || 0) : 0;
+    attackSpeed += 8 + stars * 2;
+  }
+
+  const hasTrigger = Object.values(game.equipped || {}).some(item => item && (item.id === "trigger" || (item.name && item.name.toLowerCase().includes("trigger"))));
+  let critMultiplier = 200;
+  if (hasTrigger) {
+    critMultiplier += 10;
+  }
 
   // ── Smart Forging Logic ────────────────────────────────────────────
   const allOwnedItems = useMemo(() => {
@@ -1412,6 +2316,9 @@ export default function DreamGuardian() {
   const forgeGroups = useMemo(() => {
     const groups = {};
     allOwnedItems.forEach(item => {
+      // Exclude Psyche and Deja Vu from being merged or forged
+      if (item.id === "psyche" || item.id === "deja_vu" || item.id === "dejavu") return;
+
       const ident = item.id || item.baseName || item.name;
       const key = ident + "_fl" + (item.forgeLevel || 0);
       if (!groups[key]) groups[key] = [];
@@ -1477,6 +2384,62 @@ export default function DreamGuardian() {
     }
   }
 
+  const onKeeperReward = (sectorId) => {
+    setGame(g => {
+      let nextPlayer = { ...g.player };
+      let logs = [...g.dreamLog];
+      let notificationMsg = "";
+      const xpNotifications = [];
+
+      if (sectorId === "hypothalamus") {
+        nextPlayer.maxHp = (nextPlayer.maxHp || 100) + 15;
+        nextPlayer.hp = (nextPlayer.hp || 100) + 15;
+        nextPlayer.coins = (nextPlayer.coins || 0) + 100;
+        notificationMsg = "Hypothalamus sync complete! Alex's life force stabilizes (+15 Permanent Max HP, +100 Coins 🪙).";
+      } else if (sectorId === "amygdala") {
+        nextPlayer.coins = (nextPlayer.coins || 0) + 150;
+        nextPlayer = addPlayerXp(nextPlayer, 150, xpNotifications);
+        notificationMsg = "Amygdala fear conditioning resolved! (+150 Coins 🪙, +150 XP 🌟).";
+      } else if (sectorId === "pineal") {
+        nextPlayer.shards = (nextPlayer.shards || 0) + 10;
+        notificationMsg = "Pineal Gland alignment complete! Ultimate dream energy crystallized (+10 Dream Shards 💎).";
+      } else if (sectorId === "brainstem") {
+        nextPlayer.maxMp = (nextPlayer.maxMp || 40) + 10;
+        nextPlayer.mp = (nextPlayer.mp || 40) + 10;
+        nextPlayer.coins = (nextPlayer.coins || 0) + 150;
+        notificationMsg = "Brainstem pathways cleared! Reflex signals boosted (+10 Permanent Max MP, +150 Coins 🪙).";
+      } else if (sectorId === "prefrontal") {
+        nextPlayer = addPlayerXp(nextPlayer, 300, xpNotifications);
+        notificationMsg = "Prefrontal Cortex cognitive coherence reached! (+300 XP 🌟).";
+      } else if (sectorId === "forebrain") {
+        const nextBond = Math.min(200, (g.bond || 0) + 15);
+        notificationMsg = `Basal Forebrain synchronization complete! Alex feels your persistent, warm presence (+15 Bond Points 💖).`;
+        
+        let updatedLogs = [`🌌 Reconstructed ${sectorId} sector: ${notificationMsg}`, ...g.dreamLog];
+        xpNotifications.forEach(n => updatedLogs.unshift(`🌟 ${n}`));
+        
+        notify("Neural Synchronization Complete! 🌌");
+        return {
+          ...g,
+          bond: nextBond,
+          neuralMissionCompletedToday: true,
+          dreamLog: updatedLogs
+        };
+      }
+
+      let updatedLogs = [`🌌 Reconstructed ${sectorId} sector: ${notificationMsg}`, ...logs];
+      xpNotifications.forEach(n => updatedLogs.unshift(`🌟 ${n}`));
+
+      notify("Neural Synchronization Complete! 🌌");
+      return {
+        ...g,
+        player: nextPlayer,
+        neuralMissionCompletedToday: true,
+        dreamLog: updatedLogs
+      };
+    });
+  };
+
   function onScavengeFinish(coins, shards = 0) {
     setShowScavenge(false);
     setGame(g => ({
@@ -1529,9 +2492,88 @@ export default function DreamGuardian() {
     }
   }
 
+  function rerollMerchant(merchantType) {
+    const cost = 10;
+    if (game.player.coins < cost) {
+      notify("Not enough coins to re-roll! 🪙");
+      return;
+    }
+
+    setGame(g => {
+      let nextMouse = g.dailyMouseItems;
+      let nextMappy = g.dailyMappyItems;
+
+      if (merchantType === "mouse") {
+        const mouseShuffled = [...MOUSE_ITEMS_POOL].sort(() => Math.random() - 0.5);
+        nextMouse = mouseShuffled.slice(0, 3).map(item => ({
+          ...item,
+          stock: item.type === "consumable" ? (Math.floor(Math.random() * 5) + 3) : 1
+        }));
+      } else if (merchantType === "mappy") {
+        const mappyShuffled = [...MAPPY_ITEMS_POOL].sort(() => Math.random() - 0.5);
+        nextMappy = mappyShuffled.slice(0, 5).map(item => ({
+          ...item,
+          stock: item.type === "consumable" ? (Math.floor(Math.random() * 5) + 3) : 1
+        }));
+      }
+
+      return {
+        ...g,
+        player: {
+          ...g.player,
+          coins: g.player.coins - cost,
+        },
+        dailyMouseItems: nextMouse,
+        dailyMappyItems: nextMappy,
+        rerollCountToday: (g.rerollCountToday || 0) + 1,
+      };
+    });
+
+    notify(`${merchantType === "mouse" ? "Mouse 🐭" : "Mappy 🐦"}'s stock re-rolled! (-🪙${cost})`);
+  }
+
   function transitionToNight() {
     setGame(g => ({ ...g, phase: "night", alexWorking: false }));
     notify("Night falls across the apartment 🌙");
+  }
+
+  function getLockedSlotsForPhobia(equipped) {
+    if (!equipped) return [];
+    const locked = [];
+    Object.entries(equipped).forEach(([slot, item]) => {
+      if (!item) return;
+      const forgeLevel = item.forgeLevel || 0;
+      let lockChance = 0.80; // Normal
+      if (forgeLevel >= 6) {
+        lockChance = 0.01; // Legendary
+      } else if (forgeLevel >= 4) {
+        lockChance = 0.05; // Epic
+      } else if (forgeLevel >= 2) {
+        lockChance = 0.20; // Rare
+      }
+      if (Math.random() < lockChance) {
+        locked.push(slot);
+      }
+    });
+    return locked;
+  }
+
+  function distributeHpToBars(totalHp, maxHp, barCount) {
+    const barSize = maxHp / barCount;
+    const bars = [];
+    let remaining = totalHp;
+    for (let i = 0; i < barCount; i++) {
+      if (remaining >= barSize) {
+        bars.push(barSize);
+        remaining -= barSize;
+      } else if (remaining > 0) {
+        bars.push(remaining);
+        remaining = 0;
+      } else {
+        bars.push(0);
+      }
+    }
+    return bars;
   }
 
   // ── Battle ──
@@ -1540,26 +2582,44 @@ export default function DreamGuardian() {
     const queue = generateEnemyQueue(count, game.day);
     
     // Form trigger probability calculation
-    const isBossFight = count >= 15;
+    const isBossFight = count >= 20;
     const hasRem = queue.some(e => e.id === "rem");
+
+    // Story Act triggers mapped to the 5 Phases (Prologue to Epilogue) over 200 nights
+    if (game.day >= 161 && (!game.shownActs || !game.shownActs.includes("epilogue"))) {
+      setActiveStoryAct("epilogue");
+    } else if (game.day >= 121 && (!game.shownActs || !game.shownActs.includes("act3"))) {
+      setActiveStoryAct("act3");
+    } else if (game.day >= 81 && (!game.shownActs || !game.shownActs.includes("act2"))) {
+      setActiveStoryAct("act2");
+    } else if (game.day >= 41 && (!game.shownActs || !game.shownActs.includes("act1"))) {
+      setActiveStoryAct("act1");
+    }
     
     let forceHybrid = false;
     let hybridExplain = "";
     const bPlayed = (game.totalBattlesCount || 0) + 1;
+    let nextFeralCount = game.feralConsecutiveCount || 0;
 
-    if (hasRem) {
-      forceHybrid = true;
-      hybridExplain = "Encountering the legendary REM Boss has jolted Luna's neural pathways, instantly awakening her celestial HYBRID Form! Claws gleaming, stats surging!";
-    } else if (isBossFight) {
-      if (Math.random() < 0.75) {
-        forceHybrid = true;
-        hybridExplain = "Sensing a colossal nightmare tyrant's presence, Luna channels her deep bond with Alex and unleashes her breathtaking HYBRID Form! (75% Chance)";
+    if (game.day >= 60) {
+      if (isBossFight || hasRem) {
+        if (Math.random() < 0.50) {
+          forceHybrid = true;
+          hybridExplain = "Sensing a colossal nightmare tyrant's presence, Luna channels her deep bond with Alex and unleashes her breathtaking HYBRID Form! (50% Chance)";
+        }
+      } else {
+        if (nextFeralCount >= 5) {
+          forceHybrid = true;
+          nextFeralCount = 0;
+          hybridExplain = "The perfect synchronization of 5 nights of Feral vigil awakens Luna's stunning HYBRID Form! Glowing with magnificent starlight!";
+        } else {
+          forceHybrid = false;
+          nextFeralCount += 1;
+        }
       }
     } else {
-      if (bPlayed >= 4 && Math.random() < 0.50) {
-        forceHybrid = true;
-        hybridExplain = "After enduring numerous intense nightmare battles, Luna has unlocked her legendary upright HYBRID Form! Glowing with radiant amethyst starlight!";
-      }
+      forceHybrid = false;
+      nextFeralCount = 0;
     }
 
     if (forceHybrid) {
@@ -1570,123 +2630,362 @@ export default function DreamGuardian() {
       });
     }
 
-    setGame(g => ({
-      ...g,
-      totalBattlesCount: bPlayed,
-      battle: {
-        enemyQueue: queue,
-        currentIdx: 0,
-        totalDefeated: 0,
-        log: [
-          count + " nightmare" + (count>1?"s":"") + " emerged from the fog!",
-          forceHybrid ? "Luna transformed into her mighty Hybrid Form!" : "Luna stands in her feral guardian stance."
-        ],
-        dodgeActive: false,
-        startTime: Date.now(),
-        currentForm: forceHybrid ? "hybrid" : "feral",
-      },
-      voidData: null,
-    }));
+    setGame(g => {
+      const isHybridForm = forceHybrid;
+      const h4Lvl = g.upgrades?.h4 || 0;
+      const skillMDefVal = h4Lvl > 0 ? getSkillStats(4, h4Lvl).power : 0;
+      const hybridDefVal = Math.floor(skillMDefVal * 1.5);
+      const startingShield = isHybridForm ? Math.floor(hybridDefVal * 0.7) : 0;
+
+      return {
+        ...g,
+        totalBattlesCount: bPlayed,
+        feralConsecutiveCount: nextFeralCount,
+        battle: {
+          enemyQueue: queue,
+          currentIdx: 0,
+          totalDefeated: 0,
+          playerShield: startingShield,
+          log: [
+            count + " nightmare" + (count>1?"s":"") + " emerged from the fog!",
+            isHybridForm 
+              ? `Luna transformed into her mighty Hybrid Form (+${startingShield} Starting Shield 🛡️!)` 
+              : "Luna stands in her feral guardian stance."
+          ],
+          dodgeActive: false,
+          startTime: Date.now(),
+          currentForm: isHybridForm ? "hybrid" : "feral",
+          insomniaTurns: 0,
+          tempDisableRegenTurns: 0,
+          fixationTurns: 0,
+          lockedSlots: queue[0]?.id === "phobia" ? getLockedSlotsForPhobia(g.equipped) : [],
+        },
+        voidData: null,
+      };
+    });
   }
 
   function resolveEnemyCounter(battleState, playerState, extraLog) {
     const enemy = battleState.enemyQueue[battleState.currentIdx];
-    const effectiveAtk = Math.max(1, enemy.atk - (enemy.debuffAtk || 0));
+    const isFeral = battleState.currentForm === "feral";
+    const upgrades = activeUpgrades; // Filter upgrades cleanly!
+
+    // Hybrid resistance calculation:
+    const hybridDefVal = Math.floor((upgrades.h4 ? getSkillStats(4, upgrades.h4).power : 0) * 1.5);
+    const hybridResistance = 2.5 * hybridDefVal; // percentage
+
+    // Process status durations
+    let nextInsomniaTurns = battleState.insomniaTurns || 0;
+    let nextDisableRegenTurns = battleState.tempDisableRegenTurns || 0;
+    let nextFixationTurns = battleState.fixationTurns || 0;
+
+    let preAttackLogs = [];
+
+    // 1. Somniphobia Special skills: Insomnia
+    if (enemy.id === "somniphobia" && nextInsomniaTurns <= 0 && Math.random() < 0.35) {
+      nextInsomniaTurns = 10;
+      nextDisableRegenTurns = 5;
+      preAttackLogs.push("💀 SOMNIPHOBIA cast INSOMNIA! Luna gains lowered Defense and Resistance for 10 turns, and Regeneration is DISABLED for 5 turns!");
+    }
+
+    // 2. Fixation Special skills: Throws Fixation
+    if (enemy.id === "fixation" && nextFixationTurns <= 0 && Math.random() < 0.35) {
+      nextFixationTurns = 3;
+      preAttackLogs.push("🕸️ FIXATION threw a Sticky Fixation! Luna's skill costs are increased and ATK is lowered for 3 turns!");
+    }
+
+    // Process Paralyze (35% turn skip chance)
+    let isParalyzedThisTurn = false;
+    if (enemy.paralyzeTurns > 0) {
+      if (Math.random() * 100 < 35) {
+        isParalyzedThisTurn = true;
+      }
+    }
+
+    // Chill (cuts attack by 25%)
+    let rawEnemyAtk = enemy.atk;
+    if (enemy.chillTurns > 0) {
+      rawEnemyAtk = Math.max(1, Math.floor(rawEnemyAtk * 0.75));
+    }
+    const effectiveAtk = Math.max(1, rawEnemyAtk - (enemy.debuffAtk || 0));
     
-    // f3 (Adrenaline Purr) gives passive dodge chance
-    let spdPower = (game.upgrades && game.upgrades.f3) ? getSkillStats(3, game.upgrades.f3).power : 0;
+    // Feral speed + evasion dodge calculation
+    let spdPower = 0;
+    if (isFeral) {
+      const movementSpeed = 10 + (upgrades.f3 || 0) * 4;
+      const evasion = 1.0 + (upgrades.f3 || 0) * 0.15;
+      spdPower = Math.floor((movementSpeed * 1.5) * evasion); // Base 15% up to 48% at max level
+    } else {
+      spdPower = 0; // base dodge in hybrid is 0
+    }
+    
+    // Distraction (+30% absolute miss rate for enemy = +30% dodge for Luna)
+    if (enemy.distractionTurns > 0) {
+      spdPower += 30;
+    }
     
     // REM dodge reduction
     let remPenalty = 0;
     if (enemy.id === "rem") {
       remPenalty = enemy.dodgeLowered ? 35 : 15;
+      
+      // Hybrid resistance blocks REM dodge reduction!
+      if (!isFeral && enemy.dodgeLowered && Math.random() * 100 < hybridResistance) {
+        remPenalty = 0; // successfully resisted!
+      }
     }
     spdPower = Math.max(0, spdPower - remPenalty);
 
-    // active dodge (skip enemy) guarantees dodge, otherwise roll speed
+    // active dodge guarantees dodge
     const isDodged = battleState.dodgeActive || (spdPower > 0 && Math.random() * 100 < spdPower);
 
-    // f6 (Ragdoll Bounce) & h4 (Guardian's Resolve) give defense
-    const defBounce = (game.upgrades && game.upgrades.f6) ? getSkillStats(4, game.upgrades.f6).power : 0;
-    const defGuard  = (game.upgrades && game.upgrades.h4) ? getSkillStats(4, game.upgrades.h4).power : 0;
-    const totalDef  = defBounce + defGuard;
+    // Defense values
+    let totalDef = 0;
+    if (isFeral) {
+      totalDef = upgrades.f6 ? getSkillStats(4, upgrades.f6).power : 0;
+    } else {
+      totalDef = hybridDefVal;
+    }
 
-    let dmgToPlayer = 0;
-    let dodgeMsg = "";
-    let updatedEnemyState = { ...enemy };
+    let effectiveResistance = hybridResistance;
+
+    // Apply Insomnia debuff reductions to defense & resistance!
+    if (nextInsomniaTurns > 0) {
+      totalDef = Math.floor(totalDef * 0.5);
+      effectiveResistance = Math.floor(effectiveResistance * 0.5);
+    }
+
+    // Determine number of attacks (e.g. multi-enemy Swarms or Amigdala Panic double-attack)
+    let attackCount = 1;
+    if (enemy.hpBars && enemy.hpBars.length > 0) {
+      attackCount = enemy.hpBars.filter(h => h > 0).length;
+    } else if (enemy.id === "amigdala" && (enemy.hp / enemy.maxHp <= 0.30)) {
+      attackCount = 2; // enters double action Panic Speed
+    }
+
+    let totalDmgToPlayer = 0;
+    let hitDetails = [];
     let isTrueLaser = false;
+    let runningPlayerShield = battleState.playerShield || 0;
+    let updatedEnemyState = { ...enemy };
 
-    if (enemy.id === "rem") {
-      const roll = Math.random();
-      if (roll < 0.25) {
-        isTrueLaser = true;
-        // True Laser: ignores all armor and reductions! Deals exactly 50 damage
-        dmgToPlayer = 50;
-        dodgeMsg = "🌌 REM fired a TRUE LASER! Ignored all defenses and dealt 50 True Damage!";
-      } else if (roll < 0.50 && !enemy.dodgeLowered) {
-        // Dodge lowering vibration
-        updatedEnemyState.dodgeLowered = true;
-        dmgToPlayer = isDodged ? 0 : Math.max(1, Math.floor(effectiveAtk * 0.5) - totalDef);
-        dodgeMsg = isDodged 
-          ? "REM used Rapid Vibration! Luna dodged but her dodge chance is now lowered (-35%)!" 
-          : `REM used Rapid Vibration! Dealt ${dmgToPlayer} damage and lowered Luna's dodge chance (-35%)!`;
-      } else {
-        // Normal attack: deals 75% of base attack twice!
-        const hit1 = isDodged ? 0 : Math.max(1, Math.floor(effectiveAtk * 0.75) - totalDef);
-        
-        // second hit has a separate dodge roll if not active dodge
-        const hit2Dodge = battleState.dodgeActive || (spdPower > 0 && Math.random() * 100 < spdPower);
-        const hit2 = hit2Dodge ? 0 : Math.max(1, Math.floor(effectiveAtk * 0.75) - totalDef);
-        
-        dmgToPlayer = hit1 + hit2;
-        if (hit1 === 0 && hit2 === 0) {
-          dodgeMsg = "REM used Normal Strike (Double Hit): Luna dodged both attacks!";
-        } else if (hit1 > 0 && hit2 === 0) {
-          dodgeMsg = `REM used Normal Strike (Double Hit): 1st hit dealt ${hit1} dmg, 2nd was dodged!`;
-        } else if (hit1 === 0 && hit2 > 0) {
-          dodgeMsg = `REM used Normal Strike (Double Hit): 1st hit dodged, 2nd dealt ${hit2} dmg!`;
+    for (let currentAtkIdx = 0; currentAtkIdx < attackCount; currentAtkIdx++) {
+      let isSubParalyzed = isParalyzedThisTurn;
+      if (isSubParalyzed) {
+        hitDetails.push("Paralyzed");
+        continue;
+      }
+
+      // Check dodge per sub-hit
+      const subDodged = battleState.dodgeActive || (spdPower > 0 && Math.random() * 100 < spdPower);
+      let subDmg = 0;
+
+      if (enemy.id === "rem" || enemy.id === "shattered_reflection" || enemy.id === "dream_eater") {
+        const roll = Math.random();
+        if (roll < 0.25) {
+          isTrueLaser = true;
+          subDmg = 50;
+        } else if (roll < 0.50 && !enemy.dodgeLowered) {
+          const isResisted = !isFeral && Math.random() * 100 < effectiveResistance;
+          if (isResisted) {
+            subDmg = subDodged ? 0 : Math.max(1, Math.floor(effectiveAtk * 0.5) - totalDef);
+          } else {
+            updatedEnemyState.dodgeLowered = true;
+            subDmg = subDodged ? 0 : Math.max(1, Math.floor(effectiveAtk * 0.5) - totalDef);
+          }
         } else {
-          dodgeMsg = `REM used Normal Strike (Double Hit): Dealt ${hit1} + ${hit2} damage!`;
+          const hit1 = subDodged ? 0 : Math.max(1, Math.floor(effectiveAtk * 0.75) - totalDef);
+          const hit2Dodge = battleState.dodgeActive || (spdPower > 0 && Math.random() * 100 < spdPower);
+          const hit2 = hit2Dodge ? 0 : Math.max(1, Math.floor(effectiveAtk * 0.75) - totalDef);
+          subDmg = hit1 + hit2;
         }
+      } else {
+        subDmg = subDodged ? 0 : Math.max(1, effectiveAtk - totalDef);
+      }
+
+      // Apply Armor Active DR
+      if (subDmg > 0 && !isTrueLaser) {
+        const drPercent = equippedStats.dr || 0;
+        if (drPercent > 0) {
+          subDmg = Math.max(1, Math.floor(subDmg * (1 - drPercent / 100)));
+        }
+
+        // Thorns reflection checks
+        const thornsPercent = equippedStats.thorns || 0;
+        if (thornsPercent > 0) {
+          const reflected = Math.floor(subDmg * (thornsPercent / 100));
+          if (reflected > 0) {
+            updatedEnemyState.hp = Math.max(0, updatedEnemyState.hp - reflected);
+            // If multi-hp bars (Tremor / Intrusions), distribute reflect damage across HP bars
+            if (updatedEnemyState.hpBars && updatedEnemyState.hpBars.length > 0) {
+              let rDmgLeft = reflected;
+              for (let bIdx = 0; bIdx < updatedEnemyState.hpBars.length; bIdx++) {
+                if (updatedEnemyState.hpBars[bIdx] > 0) {
+                  if (rDmgLeft >= updatedEnemyState.hpBars[bIdx]) {
+                    rDmgLeft -= updatedEnemyState.hpBars[bIdx];
+                    updatedEnemyState.hpBars[bIdx] = 0;
+                  } else {
+                    updatedEnemyState.hpBars[bIdx] -= rDmgLeft;
+                    rDmgLeft = 0;
+                    break;
+                  }
+                }
+              }
+              updatedEnemyState.hp = updatedEnemyState.hpBars.reduce((s, k) => s + k, 0);
+            }
+          }
+        }
+      }
+
+      // Apply shield absorption!
+      let shieldAbsorbed = 0;
+      if (subDmg > 0 && runningPlayerShield > 0) {
+        if (subDmg >= runningPlayerShield) {
+          shieldAbsorbed = runningPlayerShield;
+          subDmg -= runningPlayerShield;
+          runningPlayerShield = 0;
+        } else {
+          shieldAbsorbed = subDmg;
+          runningPlayerShield -= subDmg;
+          subDmg = 0;
+        }
+      }
+
+      totalDmgToPlayer += subDmg;
+      if (subDodged) {
+        hitDetails.push("dodged");
+      } else {
+        hitDetails.push(`${subDmg} dmg` + (shieldAbsorbed > 0 ? ` [absorbed ${shieldAbsorbed}]` : ""));
+      }
+    }
+
+    // Build the dodge and action result message
+    let dodgeMsg = "";
+    if (attackCount > 1) {
+      if (enemy.id === "amigdala") {
+        dodgeMsg = `🧠 Amigdala (PANIC STATE!) double-attacked: ${hitDetails.join(", ")}!`;
+      } else {
+        dodgeMsg = `🐜 Swarm (${attackCount} alive) attacked ${attackCount} times: ${hitDetails.join(", ")}!`;
       }
     } else {
-      dmgToPlayer = isDodged ? 0 : Math.max(1, effectiveAtk - totalDef);
-      dodgeMsg = isDodged ? "Luna dodged the attack!" : "Enemy dealt " + dmgToPlayer + " damage." + (totalDef > 0 ? ` (Blocked ${totalDef})` : "");
-    }
-
-    if (dmgToPlayer > 0 && !isTrueLaser) {
-      const drPercent = equippedStats.dr || 0;
-      if (drPercent > 0) {
-        const beforeDr = dmgToPlayer;
-        dmgToPlayer = Math.max(1, Math.floor(dmgToPlayer * (1 - drPercent / 100)));
-        const prevented = beforeDr - dmgToPlayer;
-        if (prevented > 0) {
-          dodgeMsg += ` (Absorbed ${prevented} dmg via active DR)`;
-        }
-      }
-
-      const thornsPercent = equippedStats.thorns || 0;
-      if (thornsPercent > 0) {
-        const reflected = Math.floor(dmgToPlayer * (thornsPercent / 100));
-        if (reflected > 0) {
-          updatedEnemyState.hp = Math.max(0, updatedEnemyState.hp - reflected);
-          dodgeMsg += ` (Thorns reflected ${reflected} dmg!)`;
-        }
+      if (isParalyzedThisTurn) {
+        dodgeMsg = `⚡ ${enemy.name} is Paralyzed! Turn skipped completely!`;
+      } else if (enemy.id === "rem") {
+        dodgeMsg = `🌌 REM action: ${hitDetails.join(", ")}!`;
+      } else {
+        dodgeMsg = isDodged ? "Luna dodged the attack!" : `Enemy dealt ${totalDmgToPlayer} damage.` + (totalDef > 0 ? ` (Blocked ${totalDef})` : "");
       }
     }
 
-    const mpRegen      = ((game.upgrades && game.upgrades.h2) || 0) > 0 ? 3 : 0;
+    // Tick DoTs / Status Effects
+    let dotDamage = 0;
+    const dotLogs = [];
+    
+    if (enemy.bleedTurns > 0) {
+      const bDmg = 8;
+      dotDamage += bDmg;
+      dotLogs.push(`🩸 Bleed deals ${bDmg} dmg to ${enemy.name || "Enemy"}! (${enemy.bleedTurns - 1} turns left)`);
+      updatedEnemyState.bleedTurns -= 1;
+    }
+    
+    if (enemy.woundsTurns > 0) {
+      const wDmg = 4;
+      dotDamage += wDmg;
+      dotLogs.push(`🩹 Wounds deal ${wDmg} dmg to ${enemy.name || "Enemy"}! (${enemy.woundsTurns - 1} turns left, heals & shields lowered)`);
+      updatedEnemyState.woundsTurns -= 1;
+    }
+    
+    if (enemy.distractionTurns > 0) {
+      const dDmg = 5;
+      dotDamage += dDmg;
+      dotLogs.push(`🗣️ Distraction deals ${dDmg} noise dmg to ${enemy.name || "Enemy"}! (${enemy.distractionTurns - 1} turns left)`);
+      updatedEnemyState.distractionTurns -= 1;
+    }
+
+    if (enemy.chillTurns > 0) {
+      dotLogs.push(`❄️ Chill active on ${enemy.name || "Enemy"} (damage reduced by 25%)! (${enemy.chillTurns - 1} turns left)`);
+      updatedEnemyState.chillTurns -= 1;
+    }
+
+    if (enemy.burnTurns > 0) {
+      dotDamage += 6;
+      dotLogs.push(`🔥 Burn deals 6 magic dmg to ${enemy.name || "Enemy"}! (${enemy.burnTurns - 1} turns left, defense lowered by 50%)`);
+      updatedEnemyState.burnTurns -= 1;
+    }
+
+    if (enemy.paralyzeTurns > 0) {
+      dotLogs.push(`⚡ Paralyze active on ${enemy.name || "Enemy"}! (${enemy.paralyzeTurns - 1} turns left, 35% skip chance)`);
+      updatedEnemyState.paralyzeTurns -= 1;
+    }
+
+    if (dotDamage > 0) {
+      updatedEnemyState.hp = Math.max(0, updatedEnemyState.hp - dotDamage);
+      // Reduce from hpBars if multi HP bars (Tremor / Intrusions)
+      if (updatedEnemyState.hpBars && updatedEnemyState.hpBars.length > 0) {
+        let dotLeft = dotDamage;
+        for (let bIdx = 0; bIdx < updatedEnemyState.hpBars.length; bIdx++) {
+          if (updatedEnemyState.hpBars[bIdx] > 0) {
+            if (dotLeft >= updatedEnemyState.hpBars[bIdx]) {
+              dotLeft -= updatedEnemyState.hpBars[bIdx];
+              updatedEnemyState.hpBars[bIdx] = 0;
+            } else {
+              updatedEnemyState.hpBars[bIdx] -= dotLeft;
+              dotLeft = 0;
+              break;
+            }
+          }
+        }
+        updatedEnemyState.hp = updatedEnemyState.hpBars.reduce((s, k) => s + k, 0);
+      }
+    }
+
+    // Auto Resource Recharge at turn end
+    let rechargeAmount = 0;
+    let label = "MP";
+    
+    if (isFeral) {
+      rechargeAmount = 15;
+      label = "Stamina";
+    } else {
+      const regenBoost = upgrades.h2 ? 3 : 0;
+      rechargeAmount = 1 + regenBoost;
+      label = "Mana";
+    }
+
+    // Disabling regeneration if Somniphobia Insomnia effect is active
+    if (nextDisableRegenTurns > 0) {
+      rechargeAmount = 0;
+    }
+
+    // Tick down status durations on Luna
+    const finalInsomniaTurns = Math.max(0, nextInsomniaTurns - 1);
+    const finalDisableRegenTurns = Math.max(0, nextDisableRegenTurns - 1);
+    const finalFixationTurns = Math.max(0, nextFixationTurns - 1);
+
     const newTurns     = Math.max(0, (enemy.debuffTurns || 0) - 1);
     const newDebuff    = newTurns > 0 ? (enemy.debuffAtk || 0) : 0;
-    const newHp        = Math.max(0, playerState.hp - dmgToPlayer);
-    const newMp        = Math.min(totalMaxMp, playerState.mp + mpRegen);
-    const log          = [dodgeMsg, ...extraLog, ...(battleState.log || [])].slice(0, 8);
+    const newHp        = Math.max(0, playerState.hp - totalDmgToPlayer);
+    const newMp        = Math.min(totalMaxMp, playerState.mp + rechargeAmount);
+    
+    let statusText = `(+${rechargeAmount} ${label} recovery)`;
+    if (nextDisableRegenTurns > 0) {
+      statusText = `(⚠️ Regen Disabled for ${nextDisableRegenTurns} more turn(s))`;
+    }
+    
+    const finalDodgeMsg = isParalyzedThisTurn ? dodgeMsg : `${dodgeMsg} ${statusText}`;
+
+    // Compile log list
+    const log = [finalDodgeMsg, ...dotLogs, ...preAttackLogs, ...extraLog, ...(battleState.log || [])].slice(0, 8);
 
     return { 
       playerHp: newHp, 
       playerMp: newMp, 
+      playerShield: runningPlayerShield,
       newDebuffAtk: newDebuff, 
       newDebuffTurns: newTurns, 
+      insomniaTurns: finalInsomniaTurns,
+      tempDisableRegenTurns: finalDisableRegenTurns,
+      fixationTurns: finalFixationTurns,
       log, 
       dead: newHp <= 0,
       updatedEnemy: updatedEnemyState
@@ -1755,6 +3054,8 @@ export default function DreamGuardian() {
           day: g.day + 1,
           talkedToday: false,
           scavengedToday: false,
+          rerollCountToday: 0,
+          neuralMissionCompletedToday: false,
           player: nextPlayer,
           inventory: updatedInv,
           mood: Math.min(1500, g.mood + moodReward),
@@ -1777,6 +3078,8 @@ export default function DreamGuardian() {
         victoryMsg += " \n🧬 Found a rare [Psyche] ascension item!";
       }
       notify(victoryMsg);
+
+
     } else {
       const nextEnemy = { ...b.enemyQueue[nextIdx] };
       setGame(g => ({
@@ -1788,6 +3091,7 @@ export default function DreamGuardian() {
           totalDefeated: newDefeated,
           dodgeActive: false,
           log: [enemy.name + " defeated! Next: " + nextEnemy.name, ...(g.battle.log || [])].slice(0, 8),
+          lockedSlots: nextEnemy.id === "phobia" ? getLockedSlotsForPhobia(g.equipped) : [],
         },
       }));
     }
@@ -1795,34 +3099,98 @@ export default function DreamGuardian() {
 
   function doAttack() {
     if (!game.battle) return;
-    const { battle, player, upgrades = {} } = game;
+    const { battle, player } = game;
     const enemy = battle.enemyQueue[battle.currentIdx];
-    const critPct  = (upgrades.f4 || 0) * 5;
-    const isCrit   = Math.random() * 100 < critPct;
-    
-    const pierceDmg = (upgrades.h5 || 0) > 0 ? getSkillStats(4, upgrades.h5).power : 0;
-    const baseDmg   = Math.floor((totalAtk + Math.floor(Math.random() * 6)) * (isCrit ? 2 : 1));
-    const dmg       = baseDmg + pierceDmg;
-    
-    const vampHeal = (upgrades.f7 || 0) > 0 ? Math.floor(dmg * (upgrades.f7 || 0) * 0.02) : 0;
+    const isFeral = battle.currentForm === "feral";
+    const upgrades = activeUpgrades; // Use our filtered upgrades!
 
-    // Apply adaptive boss stats to the boss!
+    const critPct = (upgrades.f4 || 0) * 5;
+    const isCrit = Math.random() * 100 < critPct;
+
+    const pierceDmg = (upgrades.h5 || 0) > 0 ? getSkillStats(4, upgrades.h5).power : 0;
+    const baseDmg = Math.floor((totalAtk + Math.floor(Math.random() * 6)) * (isCrit ? 2 : 1));
+    const dmg = baseDmg + pierceDmg;
+
+    let vampHeal = (upgrades.f7 || 0) > 0 ? Math.floor(dmg * (upgrades.f7 || 0) * 0.02) : 0;
+
     const adapt = getBossAdaptability(enemy, totalAtk);
-    const finalDmgInput = Math.max(1, Math.floor(dmg * (1 - adapt.reduction)));
+    let targetReduction = adapt.reduction;
+    if (enemy.burnTurns > 0) {
+      targetReduction = targetReduction * 0.5;
+    }
+    
+    let finalDmgInput = Math.max(1, Math.floor(dmg * (1 - targetReduction)));
+    if (enemy.burnTurns > 0) {
+      finalDmgInput = Math.floor(finalDmgInput * 1.3);
+    }
+    if (enemy.distractionTurns > 0) {
+      finalDmgInput = Math.floor(finalDmgInput * 1.25);
+    }
+
     const finalReflect = adapt.reflection;
 
-    const newEnemyHp = enemy.hp - finalDmgInput;
+    // Feral multi-strike rolls based on Multi-strike Chance & Attack Speed!
+    let multiHitLog = "";
+    let multiHitDamageTotal = 0;
+    let extraHitsDealt = 0;
+    
+    if (isFeral) {
+      let rolls = 0;
+      if (Math.random() * 100 < feralMultiStrikeChance) rolls++;
+      if (Math.random() * 100 < (feralAttackSpeed - 100)) rolls++;
+      
+      for (let r = 0; r < rolls; r++) {
+        extraHitsDealt += 1;
+        const extraCrit = Math.random() * 100 < critPct;
+        const rawHitDefVal = Math.floor((totalAtk + Math.floor(Math.random() * 6)) * (extraCrit ? 2 : 1)) + pierceDmg;
+        
+        let extraFinalDmg = Math.max(1, Math.floor(rawHitDefVal * (1 - targetReduction)));
+        if (enemy.burnTurns > 0) extraFinalDmg = Math.floor(extraFinalDmg * 1.3);
+        if (enemy.distractionTurns > 0) extraFinalDmg = Math.floor(extraFinalDmg * 1.25);
+        
+        multiHitDamageTotal += extraFinalDmg;
+        const extraVamp = (upgrades.f7 || 0) > 0 ? Math.floor(extraFinalDmg * (upgrades.f7 || 0) * 0.02) : 0;
+        vampHeal += extraVamp;
+      }
+      if (extraHitsDealt > 0) {
+        multiHitLog = ` ⚡ MULTI-STRIKE! Luna attacked ${extraHitsDealt} additional time(s) for +${multiHitDamageTotal} damage!`;
+      }
+    }
+
+    const totalDamage = finalDmgInput + multiHitDamageTotal;
+
+    // Apply combat DoT chance on hit
+    let appliedDoTMsg = "";
+    let nextBleedTurns = enemy.bleedTurns || 0;
+    let nextWoundsTurns = enemy.woundsTurns || 0;
+
+    if (isFeral) {
+      const bleedChance = 35 + (upgrades.f1 || 0) * 10;
+      if (Math.random() * 100 < bleedChance) {
+        nextBleedTurns = 3;
+        appliedDoTMsg += " 🩸 Applied Bleed (3s)!";
+      }
+      if (isCrit) {
+        nextWoundsTurns = 3;
+        appliedDoTMsg += " 🩹 Critical Strike applied Wounds (3s)!";
+      }
+    }
+
+    const newEnemyHp = Math.max(0, enemy.hp - totalDamage);
     const isDeadFromReflect = (player.hp + vampHeal - finalReflect) <= 0;
 
     const atkLog = [
       (isCrit ? "⚡ Critical! " : "") + 
-      "Luna dealt " + finalDmgInput + " damage" +
-      (pierceDmg > 0 ? ` (incl. +${pierceDmg} Pierce)` : "") + 
-      (vampHeal > 0 ? " (+" + vampHeal + " vamp)" : "") + 
+      "Luna dealt " + totalDamage + " damage" +
+      (pierceDmg > 0 ? ` (adj. +${pierceDmg} Pierce)` : "") + 
+      (vampHeal > 0 ? " (+" + vampHeal + " vamp heal)" : "") + 
+      appliedDoTMsg + multiHitLog +
       "." + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflected damage.` : "")
     ];
 
     if (newEnemyHp <= 0) {
+      const healedHp = Math.min(totalMaxHp, player.hp + vampHeal - finalReflect);
+      setGame(g => ({ ...g, player: { ...g.player, hp: healedHp } }));
       handleEnemyDefeated(game, player.mp);
       return;
     }
@@ -1832,12 +3200,28 @@ export default function DreamGuardian() {
       return;
     }
 
-    const nextEnemyQueue = battle.enemyQueue.map((e, i) =>
-      i === battle.currentIdx ? { ...e, hp: newEnemyHp } : e
-    );
+    const nextEnemyQueue = battle.enemyQueue.map((e, i) => {
+      if (i === battle.currentIdx) {
+        const updatedBars = e.hpBars && e.hpBars.length > 0 
+          ? distributeHpToBars(newEnemyHp, e.maxHp, e.hpBars.length)
+          : e.hpBars;
+        return { 
+          ...e, 
+          hp: newEnemyHp,
+          hpBars: updatedBars,
+          bleedTurns: nextBleedTurns, 
+          woundsTurns: nextWoundsTurns 
+        };
+      }
+      return e;
+    });
+
     const next = resolveEnemyCounter(
-      { ...battle, enemyQueue: nextEnemyQueue, dodgeActive: false }, { ...player, hp: player.hp + vampHeal - finalReflect }, atkLog
+      { ...battle, enemyQueue: nextEnemyQueue, dodgeActive: false },
+      { ...player, hp: player.hp + vampHeal - finalReflect },
+      atkLog
     );
+
     if (next.dead) { handleDefeatByEnemy(); return; }
 
     if (next.updatedEnemy && next.updatedEnemy.hp <= 0) {
@@ -1860,32 +3244,55 @@ export default function DreamGuardian() {
             hp: next.updatedEnemy ? next.updatedEnemy.hp : newEnemyHp, 
             debuffAtk: next.newDebuffAtk, 
             debuffTurns: next.newDebuffTurns,
-            dodgeLowered: next.updatedEnemy ? next.updatedEnemy.dodgeLowered : e.dodgeLowered
+            dodgeLowered: next.updatedEnemy ? next.updatedEnemy.dodgeLowered : e.dodgeLowered,
+            bleedTurns: next.updatedEnemy?.bleedTurns !== undefined ? next.updatedEnemy.bleedTurns : nextBleedTurns,
+            woundsTurns: next.updatedEnemy?.woundsTurns !== undefined ? next.updatedEnemy.woundsTurns : nextWoundsTurns,
+            distractionTurns: next.updatedEnemy?.distractionTurns !== undefined ? next.updatedEnemy.distractionTurns : e.distractionTurns,
+            chillTurns: next.updatedEnemy?.chillTurns !== undefined ? next.updatedEnemy.chillTurns : e.chillTurns,
+            burnTurns: next.updatedEnemy?.burnTurns !== undefined ? next.updatedEnemy.burnTurns : e.burnTurns,
+            paralyzeTurns: next.updatedEnemy?.paralyzeTurns !== undefined ? next.updatedEnemy.paralyzeTurns : e.paralyzeTurns,
           }
         : e
     );
+
     setGame(g => ({
       ...g,
       player: { ...g.player, hp: Math.min(totalMaxHp, next.playerHp), mp: next.playerMp },
-      battle: { ...g.battle, dodgeActive: false, enemyQueue: newQueue, log: next.log },
+      battle: { 
+        ...g.battle, 
+        dodgeActive: false, 
+        enemyQueue: newQueue, 
+        log: next.log,
+        playerShield: next.playerShield !== undefined ? next.playerShield : g.battle.playerShield,
+        insomniaTurns: next.insomniaTurns !== undefined ? next.insomniaTurns : g.battle.insomniaTurns,
+        tempDisableRegenTurns: next.tempDisableRegenTurns !== undefined ? next.tempDisableRegenTurns : g.battle.tempDisableRegenTurns,
+        fixationTurns: next.fixationTurns !== undefined ? next.fixationTurns : g.battle.fixationTurns,
+        lockedSlots: g.battle.lockedSlots
+      },
     }));
   }
 
   function doSkill(skill) {
     if (!game.battle) return;
-    const { battle, player, upgrades = {} } = game;
+    const { battle, player } = game;
     const enemy = battle.enemyQueue[battle.currentIdx];
+    const isFeral = battle.currentForm === "feral";
+    const upgrades = activeUpgrades; // Use our filtered upgrades!
 
-    // f10 (Feline Grace) reduces physical skill mana costs
     let actualCost = skill.mpCost || 0;
     if (skill.id.startsWith("f") && upgrades.f10) {
       const reduction = Math.max(0, upgrades.f10 * 2);
       actualCost = Math.max(1, actualCost - reduction);
     }
+    if (isBattle && game.battle?.fixationTurns > 0) {
+      actualCost = Math.ceil(actualCost * 1.40);
+    }
 
-    if (player.mp < actualCost) { notify("Not enough MP 🧪"); return; }
+    if (player.mp < actualCost) { 
+      notify(isFeral ? "Not enough Stamina ⚡" : "Not enough MP 🧪"); 
+      return; 
+    }
 
-    // First check REM Magic Shield!
     const isMagical = skill.id.startsWith("h");
     const isRem = enemy.id === "rem";
     let nextMagicShield = enemy.magicShield || 0;
@@ -1898,24 +3305,36 @@ export default function DreamGuardian() {
     let skipEnemy      = false;
     let skillLog       = "";
 
-    // h5 Star-Touched Nails pierce damage
+    let nextBleedTurns       = enemy.bleedTurns || 0;
+    let nextWoundsTurns      = enemy.woundsTurns || 0;
+    let nextDistractionTurns = enemy.distractionTurns || 0;
+    let nextChillTurns       = enemy.chillTurns || 0;
+    let nextBurnTurns        = enemy.burnTurns || 0;
+    let nextParalyzeTurns    = enemy.paralyzeTurns || 0;
+
+    let healAmount = 0;
+    let cleanseDoneMsg = "";
+    
     const pierceDmg = (upgrades.h5 || 0) > 0 ? getSkillStats(4, upgrades.h5).power : 0;
 
     if (isRem && isMagical && nextMagicShield > 0) {
-      // Magic Shield blocks!
       nextMagicShield -= 1;
       skillLog = `🔮 REM's Magic Shield BLOCKED ${skill.name}! (Shields remaining: ${nextMagicShield})`;
       
-      const shieldQueue = game.battle.enemyQueue.map((e, i) =>
-        i === battle.currentIdx ? { ...e, magicShield: nextMagicShield } : e
+      const shieldQueue = game.battle.enemyQueue.map((e, idx) =>
+        idx === battle.currentIdx ? { ...e, magicShield: nextMagicShield } : e
       );
 
       const mpRegen = (upgrades.h2 || 0) > 0 ? 3 : 0;
-      const next = resolveEnemyCounter({ ...battle, enemyQueue: shieldQueue, dodgeActive: newDodge }, { ...player, mp: newPlayerMp }, [skillLog]);
+      const next = resolveEnemyCounter(
+        { ...battle, enemyQueue: shieldQueue, dodgeActive: newDodge },
+        { ...player, mp: newPlayerMp },
+        [skillLog]
+      );
       if (next.dead) { handleDefeatByEnemy(); return; }
       
-      const finalQueue = shieldQueue.map((e, i) =>
-        i === battle.currentIdx 
+      const finalQueue = shieldQueue.map((e, idx) =>
+        idx === battle.currentIdx 
           ? { 
               ...e, 
               debuffAtk: next.newDebuffAtk, 
@@ -1927,34 +3346,65 @@ export default function DreamGuardian() {
       setGame(g => ({
         ...g,
         player: { ...g.player, hp: next.playerHp, mp: Math.min(totalMaxMp, next.playerMp + mpRegen) },
-        battle: { ...g.battle, dodgeActive: false, enemyQueue: finalQueue, log: next.log },
+        battle: {
+          ...g.battle,
+          dodgeActive: false,
+          enemyQueue: finalQueue,
+          log: next.log,
+          playerShield: next.playerShield,
+          insomniaTurns: next.insomniaTurns !== undefined ? next.insomniaTurns : g.battle.insomniaTurns,
+          tempDisableRegenTurns: next.tempDisableRegenTurns !== undefined ? next.tempDisableRegenTurns : g.battle.tempDisableRegenTurns,
+          fixationTurns: next.fixationTurns !== undefined ? next.fixationTurns : g.battle.fixationTurns,
+          lockedSlots: g.battle.lockedSlots
+        },
       }));
       return;
     }
 
     let initialDmg = 0;
+    let isAoe = false;
+
     switch (skill.id) {
       case "f2": { 
-        initialDmg = Math.floor(totalAtk*1.5+Math.random()*8) + pierceDmg; 
+        initialDmg = Math.floor(totalAtk * 1.5 + Math.random() * 8) + pierceDmg; 
+        nextBleedTurns = 3;
         break; 
       }
-      case "f5": { skipEnemy=true; skillLog="Shadow Blend! Attack negated."; break; }
-      case "f8": { newDebuffAtk=4; newDebuffTurns=2; skillLog="Alpha Hiss! Enemy ATK  (2 turns)."; break; }
+      case "f5": { skipEnemy = true; skillLog = "Shadow Blend! Attack negated."; break; }
+      case "f8": { 
+        newDebuffAtk = 4; 
+        newDebuffTurns = 2; 
+        nextWoundsTurns = 3;
+        nextDistractionTurns = 3;
+        skillLog = "Alpha Hiss! Enemy ATK decreased, Wounded & Distracted (3 turns)."; 
+        break; 
+      }
       case "h1": { 
-        initialDmg = Math.floor(player.matk*1.4+Math.random()*10) + pierceDmg; 
+        initialDmg = Math.floor(player.matk * 1.4 + Math.random() * 10) + pierceDmg; 
+        nextChillTurns = 2;
         break; 
       }
       case "h3": { 
-        initialDmg = Math.floor(player.matk*2.0+Math.random()*15) + pierceDmg; 
+        initialDmg = Math.floor(player.matk * 2.0 + Math.random() * 15) + pierceDmg; 
+        nextBurnTurns = 2;
+        isAoe = true;
         break; 
       }
       case "h6": { 
-        initialDmg = Math.floor(player.matk*0.8); 
-        skipEnemy=true; 
-        newDodge=true; 
+        initialDmg = Math.floor(player.matk * 0.8); 
+        skipEnemy = true; 
+        newDodge = true; 
+        cleanseDoneMsg = " ✨ Cleansed all debuffs!";
         break; 
       }
-      case "h7": { newDebuffAtk=5; newDebuffTurns=3; skillLog="Echoing Meow! Enemy ATK  (3 turns)."; break; }
+      case "h7": { 
+        newDebuffAtk = 5; 
+        newDebuffTurns = 3; 
+        nextParalyzeTurns = 2;
+        healAmount = Math.floor(totalMaxHp * 0.25);
+        skillLog = `Echoing Meow! Enemy ATK decreased & Paralyzed (2 turns). Luna healed for +${healAmount} HP!`; 
+        break; 
+      }
       case "h9": { 
         if ((game.bond || 0) >= 200) {
           initialDmg = Math.floor((game.bond || 0) * 4 + (player.matk || 10) * 5) + pierceDmg;
@@ -1963,37 +3413,97 @@ export default function DreamGuardian() {
         }
         break; 
       }
-      default:   { skillLog=skill.name + " activated!"; }
+      case "f_ult": {
+        const bondScale = 1 + 0.5 * ((game.bond || 0) / 200);
+        initialDmg = Math.floor(totalAtk * 4.0 * bondScale) + pierceDmg;
+        nextBleedTurns = 4;
+        break;
+      }
+      case "h_ult": {
+        const bondScale = 1 + 0.5 * ((game.bond || 0) / 200);
+        initialDmg = Math.floor((player.matk || 12) * 5.0 * bondScale) + pierceDmg;
+        nextBurnTurns = 3;
+        break;
+      }
+      default: { skillLog = skill.name + " activated!"; }
     }
 
     const adapt = getBossAdaptability(enemy, totalAtk);
-    const finalDmgInput = initialDmg > 0 ? Math.max(1, Math.floor(initialDmg * (1 - adapt.reduction))) : 0;
+    let targetReduction = adapt.reduction;
+    if (enemy.burnTurns > 0) {
+      targetReduction = targetReduction * 0.5;
+    }
+    let finalDmgInput = initialDmg > 0 ? Math.max(1, Math.floor(initialDmg * (1 - targetReduction))) : 0;
+    
+    if (initialDmg > 0) {
+      if (enemy.burnTurns > 0) finalDmgInput = Math.floor(finalDmgInput * 1.3);
+      if (enemy.distractionTurns > 0) finalDmgInput = Math.floor(finalDmgInput * 1.25);
+    }
+
     const finalReflect = initialDmg > 0 ? adapt.reflection : 0;
 
-    if (initialDmg > 0) {
-      newEnemyHp -= finalDmgInput;
-      if (skill.id === "f2") {
-        skillLog = `Midnight Pounce! ${finalDmgInput} damage` + (pierceDmg > 0 ? ` (+${pierceDmg} Pierce).` : ".") + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
-      } else if (skill.id === "h1") {
-        skillLog = `Lunar Spark! ${finalDmgInput} magic dmg` + (pierceDmg > 0 ? ` (+${pierceDmg} Pierce).` : ".") + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
-      } else if (skill.id === "h3") {
-        skillLog = `Violet Tear! ${finalDmgInput} damage` + (pierceDmg > 0 ? ` (+${pierceDmg} Pierce).` : ".") + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
-      } else if (skill.id === "h6") {
-        skillLog = `Warp Step! Dodge + ${finalDmgInput} counter.` + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
-      } else if (skill.id === "h9") {
-        if ((game.bond || 0) >= 200) {
-          skillLog = `🌌 COSMIC ECLIPSE! (Supreme Affinity Ultimate) deals ${finalDmgInput} cataclysmic damage!` + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
-        } else {
-          skillLog = `Bond Flare! ${finalDmgInput} damage.` + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
-        }
+    // Feral Multi-strike chance for active skills. If it hits, it multiplies the final damage!
+    let multiHitLog = "";
+    let multiHitDamageTotal = 0;
+    let extraHitsDealt = 0;
+    
+    if (isFeral && initialDmg > 0) {
+      let rolls = 0;
+      if (Math.random() * 100 < feralMultiStrikeChance) rolls++;
+      if (Math.random() * 100 < (feralAttackSpeed - 100)) rolls++;
+      
+      for (let r = 0; r < rolls; r++) {
+        extraHitsDealt += 1;
+        let extraFinalDmg = Math.max(1, Math.floor(initialDmg * (1 - targetReduction)));
+        if (enemy.burnTurns > 0) extraFinalDmg = Math.floor(extraFinalDmg * 1.3);
+        if (enemy.distractionTurns > 0) extraFinalDmg = Math.floor(extraFinalDmg * 1.25);
+        multiHitDamageTotal += extraFinalDmg;
+      }
+      if (extraHitsDealt > 0) {
+        multiHitLog = ` ⚡ MULTI-STRIKE! ${skill.name} pattern repeated ${extraHitsDealt} times for +${multiHitDamageTotal} damage!`;
       }
     }
 
-    const isDeadFromRecoil = finalReflect > 0 && (player.hp - finalReflect) <= 0;
+    const totalDamage = finalDmgInput + multiHitDamageTotal;
+
+    if (initialDmg > 0) {
+      newEnemyHp -= totalDamage;
+      if (skill.id === "f2") {
+        skillLog = `Midnight Pounce! ${totalDamage} damage` + (pierceDmg > 0 ? ` (+${pierceDmg} Pierce).` : ".") + multiHitLog + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
+      } else if (skill.id === "h1") {
+        skillLog = `Lunar Spark! ${totalDamage} magic dmg` + (pierceDmg > 0 ? ` (+${pierceDmg} Pierce).` : ".") + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
+      } else if (skill.id === "h3") {
+        skillLog = `Violet Tear! ${totalDamage} damage` + (pierceDmg > 0 ? ` (+${pierceDmg} Pierce).` : ".") + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
+      } else if (skill.id === "h6") {
+        skillLog = `Warp Step! Dodge activated + ${totalDamage} counter.` + cleanseDoneMsg + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
+      } else if (skill.id === "h9") {
+        if ((game.bond || 0) >= 200) {
+          skillLog = `🌌 COSMIC ECLIPSE! (Supreme Affinity Ultimate) deals ${totalDamage} cataclysmic damage!` + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
+        } else {
+          skillLog = `Bond Flare! ${totalDamage} damage.` + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
+        }
+      } else if (skill.id === "f_ult") {
+        const percentGrown = Math.round(((game.bond || 0) / 200) * 50);
+        skillLog = `👑 SOVEREIGN CLAW! (Supreme Loyalty Ultimate: +${percentGrown}% bond power) deals ${totalDamage} impact damage!` + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
+      } else if (skill.id === "h_ult") {
+        const percentGrown = Math.round(((game.bond || 0) / 200) * 50);
+        skillLog = `🌌 COSMIC ECLIPSE! (Supreme Affinity Ultimate: +${percentGrown}% bond power) deals ${totalDamage} cataclysmic damage!` + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
+      }
+    }
+
+    const isDeadFromRecoil = finalReflect > 0 && (player.hp + healAmount - finalReflect) <= 0;
 
     if (newEnemyHp <= 0) {
       const remainingMp = Math.max(0, newPlayerMp);
-      setGame(g => ({ ...g, player: { ...g.player, mp: remainingMp } }));
+      setGame(g => {
+        const isUltimate = skill.id === "f_ult" || skill.id === "h_ult";
+        const nextBondValue = isUltimate ? Math.floor((g.bond || 0) * 0.5) : (g.bond || 0);
+        return {
+          ...g,
+          bond: nextBondValue,
+          player: { ...g.player, hp: Math.min(totalMaxHp, player.hp + healAmount - finalReflect), mp: remainingMp },
+        };
+      });
       handleEnemyDefeated(game, remainingMp);
       return;
     }
@@ -2004,30 +3514,107 @@ export default function DreamGuardian() {
     }
 
     const mpRegen = (upgrades.h2 || 0) > 0 ? 3 : 0;
-    const newQueue = game.battle.enemyQueue.map((e, i) =>
-      i === battle.currentIdx
-        ? { ...e, hp: newEnemyHp, debuffAtk: newDebuffAtk, debuffTurns: newDebuffTurns }
-        : e
-    );
+    
+    // Process AOE Splash Damage for h3 Violet Tear!
+    let aoeLog = "";
+    const updatedQueueWithAoe = battle.enemyQueue.map((e, i) => {
+      if (i === battle.currentIdx) {
+        const updatedBars = e.hpBars && e.hpBars.length > 0 
+          ? distributeHpToBars(newEnemyHp, e.maxHp, e.hpBars.length)
+          : e.hpBars;
+        return { 
+          ...e, 
+          hp: newEnemyHp, 
+          hpBars: updatedBars,
+          debuffAtk: newDebuffAtk, 
+          debuffTurns: newDebuffTurns,
+          bleedTurns: nextBleedTurns,
+          woundsTurns: nextWoundsTurns,
+          distractionTurns: nextDistractionTurns,
+          chillTurns: nextChillTurns,
+          burnTurns: nextBurnTurns,
+          paralyzeTurns: nextParalyzeTurns,
+        };
+      }
+      if (isAoe && (i === battle.currentIdx + 1 || i === battle.currentIdx + 2)) {
+        const splashAmt = Math.floor(totalDamage * 0.5);
+        const splashNewHp = Math.max(0, e.hp - splashAmt);
+        const splashUpdatedBars = e.hpBars && e.hpBars.length > 0
+          ? distributeHpToBars(splashNewHp, e.maxHp, e.hpBars.length)
+          : e.hpBars;
+        aoeLog += `Splash dealt ${splashAmt} dmg to ${e.name}! `;
+        return { ...e, hp: splashNewHp, hpBars: splashUpdatedBars };
+      }
+      return e;
+    });
+
+    if (aoeLog) {
+      skillLog += ` [💥 AOE Splash: ${aoeLog}]`;
+    }
+
+    // Shielding skill (Warp Step h6) gives shield equal to hybrid defense!
+    let customModifiedShield = battle.playerShield || 0;
+    if (skill.id === "h6") {
+      const skillMDefVal = upgrades.h4 ? getSkillStats(4, upgrades.h4).power : 0;
+      const hybridDefVal = Math.floor(skillMDefVal * 1.5);
+      customModifiedShield = (customModifiedShield || 0) + hybridDefVal;
+      skillLog += ` (Gained +${hybridDefVal} Shield!)`;
+    }
+
+    const baseTempBattleState = { 
+      ...battle, 
+      enemyQueue: updatedQueueWithAoe, 
+      dodgeActive: newDodge, 
+      playerShield: customModifiedShield 
+    };
 
     if (skipEnemy) {
-      setGame(g => ({
-        ...g,
-        player: { ...g.player, hp: Math.max(1, player.hp - finalReflect), mp: Math.min(totalMaxMp, newPlayerMp + mpRegen) },
-        battle: { ...g.battle, dodgeActive: newDodge, enemyQueue: newQueue, log: [skillLog, ...(battle.log||[])].slice(0,8) },
-      }));
+      setGame(g => {
+        const isUltimate = skill.id === "f_ult" || skill.id === "h_ult";
+        const nextBondValue = isUltimate ? Math.floor((g.bond || 0) * 0.5) : (g.bond || 0);
+        return {
+          ...g,
+          bond: nextBondValue,
+          player: { 
+            ...g.player, 
+            hp: Math.min(totalMaxHp, player.hp + healAmount - finalReflect), 
+            mp: Math.min(totalMaxMp, newPlayerMp + mpRegen) 
+          },
+          battle: { 
+            ...g.battle, 
+            dodgeActive: newDodge, 
+            enemyQueue: updatedQueueWithAoe.map((e, idx) => {
+              if (idx === battle.currentIdx) {
+                return { ...e, dodgeLowered: false }; // cleansed!
+              }
+              return e;
+            }), 
+            log: [skillLog, ...(battle.log || [])].slice(0, 8),
+            playerShield: customModifiedShield
+          },
+        };
+      });
       return;
     }
 
-    const next = resolveEnemyCounter({ ...battle, enemyQueue: newQueue, dodgeActive: newDodge }, { ...player, hp: player.hp - finalReflect, mp: newPlayerMp }, [skillLog]);
+    const next = resolveEnemyCounter(
+      baseTempBattleState,
+      { ...player, hp: player.hp + healAmount - finalReflect, mp: newPlayerMp },
+      [skillLog]
+    );
+
     if (next.dead) { handleDefeatByEnemy(); return; }
 
     if (next.updatedEnemy && next.updatedEnemy.hp <= 0) {
+      const isUltimate = skill.id === "f_ult" || skill.id === "h_ult";
+      if (isUltimate) {
+        setGame(g => ({ ...g, bond: Math.floor((g.bond || 0) * 0.5) }));
+      }
       handleEnemyDefeated({
         ...game,
         battle: {
           ...game.battle,
-          enemyQueue: newQueue.map((e, i) =>
+          enemyQueue: updatedQueueWithAoe.map((e, i) =>
             i === battle.currentIdx ? { ...e, hp: 0 } : e
           )
         }
@@ -2035,22 +3622,44 @@ export default function DreamGuardian() {
       return;
     }
 
-    const finalQueue = newQueue.map((e, i) =>
+    const finalQueue = updatedQueueWithAoe.map((e, i) =>
       i === battle.currentIdx 
         ? { 
             ...e, 
             hp: next.updatedEnemy ? next.updatedEnemy.hp : newEnemyHp,
             debuffAtk: next.newDebuffAtk, 
             debuffTurns: next.newDebuffTurns,
-            dodgeLowered: next.updatedEnemy ? next.updatedEnemy.dodgeLowered : e.dodgeLowered
+            dodgeLowered: next.updatedEnemy ? next.updatedEnemy.dodgeLowered : e.dodgeLowered,
+            bleedTurns: next.updatedEnemy?.bleedTurns !== undefined ? next.updatedEnemy.bleedTurns : nextBleedTurns,
+            woundsTurns: next.updatedEnemy?.woundsTurns !== undefined ? next.updatedEnemy.woundsTurns : nextWoundsTurns,
+            distractionTurns: next.updatedEnemy?.distractionTurns !== undefined ? next.updatedEnemy.distractionTurns : nextDistractionTurns,
+            chillTurns: next.updatedEnemy?.chillTurns !== undefined ? next.updatedEnemy.chillTurns : nextChillTurns,
+            burnTurns: next.updatedEnemy?.burnTurns !== undefined ? next.updatedEnemy.burnTurns : nextBurnTurns,
+            paralyzeTurns: next.updatedEnemy?.paralyzeTurns !== undefined ? next.updatedEnemy.paralyzeTurns : nextParalyzeTurns,
           } 
         : e
     );
-    setGame(g => ({
-      ...g,
-      player: { ...g.player, hp: next.playerHp, mp: Math.min(totalMaxMp, next.playerMp + mpRegen) },
-      battle: { ...g.battle, dodgeActive: false, enemyQueue: finalQueue, log: next.log },
-    }));
+
+    setGame(g => {
+      const isUltimate = skill.id === "f_ult" || skill.id === "h_ult";
+      const nextBondValue = isUltimate ? Math.floor((g.bond || 0) * 0.5) : (g.bond || 0);
+      return {
+        ...g,
+        bond: nextBondValue,
+        player: { ...g.player, hp: Math.min(totalMaxHp, next.playerHp), mp: Math.min(totalMaxMp, next.playerMp + mpRegen) },
+        battle: { 
+          ...g.battle, 
+          dodgeActive: false, 
+          enemyQueue: finalQueue, 
+          log: next.log,
+          playerShield: next.playerShield !== undefined ? next.playerShield : customModifiedShield,
+          insomniaTurns: next.insomniaTurns !== undefined ? next.insomniaTurns : g.battle.insomniaTurns,
+          tempDisableRegenTurns: next.tempDisableRegenTurns !== undefined ? next.tempDisableRegenTurns : g.battle.tempDisableRegenTurns,
+          fixationTurns: next.fixationTurns !== undefined ? next.fixationTurns : g.battle.fixationTurns,
+          lockedSlots: g.battle.lockedSlots
+        },
+      };
+    });
   }
 
   function handleDefeatByEnemy() {
@@ -2079,6 +3688,11 @@ export default function DreamGuardian() {
         coins: g.player.coins + earnedCoins,
       }, totalXpGained, xpNotifications);
 
+      const hasApnea = b && b.enemyQueue && b.enemyQueue.some(e => e.id === "apnea");
+      const apneaPenalty = hasApnea ? 75 : 0;
+      const finalMoodDeduction = 150 + apneaPenalty;
+      const apneaLogMsg = hasApnea ? " Also suffered -75 Mood from Apnea's locking effect." : "";
+
       return {
         ...g,
         battle: null,
@@ -2087,16 +3701,20 @@ export default function DreamGuardian() {
         day: g.day + 1,
         talkedToday: false,
         scavengedToday: false,
+        rerollCountToday: 0,
+        neuralMissionCompletedToday: false,
         player: nextPlayer,
-        mood: Math.max(0, g.mood - 150),
+        mood: Math.max(0, g.mood - finalMoodDeduction),
         dreamLog: [
-          `Night ${g.day}: Luna fell in battle (${defeatedCount} enemies defeated). Dawn broke the nightmare. Obtained 1 Dream Shard, +${earnedCoins} coins, and +${totalXpGained} XP.`,
+          `Night ${g.day}: Luna fell in battle (${defeatedCount} enemies defeated). Dawn broke the nightmare. Obtained 1 Dream Shard, +${earnedCoins} coins, and +${totalXpGained} XP.${apneaLogMsg}`,
           ...xpNotifications.map(n => `🌟 ${n}`),
           ...g.dreamLog,
         ],
       };
     });
-    notify(`Luna fell in battle! 💀 -150 Mood. Morning arrives (+1 Dream Shard, +${earnedCoins} coins, +${totalXpGained} XP).`);
+    const hasApnea = b && b.enemyQueue && b.enemyQueue.some(e => e.id === "apnea");
+    const penaltyText = hasApnea ? "💀 -225 Mood (incl. Apnea lock deduction)" : "💀 -150 Mood";
+    notify(`Luna fell in battle! ${penaltyText}. Morning arrives (+1 Dream Shard, +${earnedCoins} coins, +${totalXpGained} XP).`);
   }
 
   function handleFleeBattle() {
@@ -2155,19 +3773,28 @@ export default function DreamGuardian() {
   function handleReenterDreamscape() {
     const { voidData } = game;
     if (!voidData || !voidData.remainingQueue) return;
-    setGame(g => ({
-      ...g,
-      battle: {
-        enemyQueue: voidData.originalQueue || voidData.remainingQueue,
-        currentIdx: voidData.currentIdx !== undefined ? voidData.currentIdx : 0,
-        totalDefeated: voidData.totalDefeated,
-        log: ["Luna dives back into the Dreamscape!"],
-        dodgeActive: false,
-        startTime: Date.now(),
-        currentForm: voidData.currentForm || "feral",
-      },
-      voidData: null,
-    }));
+    setGame(g => {
+      const isHybridForm = (voidData.currentForm || "feral") === "hybrid";
+      const h4Lvl = g.upgrades?.h4 || 0;
+      const skillMDefVal = h4Lvl > 0 ? getSkillStats(4, h4Lvl).power : 0;
+      const hybridDefVal = Math.floor(skillMDefVal * 1.5);
+      const startingShield = isHybridForm ? Math.floor(hybridDefVal * 0.7) : 0;
+
+      return {
+        ...g,
+        battle: {
+          enemyQueue: voidData.originalQueue || voidData.remainingQueue,
+          currentIdx: voidData.currentIdx !== undefined ? voidData.currentIdx : 0,
+          totalDefeated: voidData.totalDefeated,
+          playerShield: startingShield,
+          log: [`Luna dives back into the Dreamscape in her ${isHybridForm ? "HYBRID" : "FERAL"} form!`],
+          dodgeActive: false,
+          startTime: Date.now(),
+          currentForm: voidData.currentForm || "feral",
+        },
+        voidData: null,
+      };
+    });
   }
 
   function handleSleepFromVoid() {
@@ -2194,6 +3821,8 @@ export default function DreamGuardian() {
         battle: null,
         talkedToday: false,
         scavengedToday: false,
+        rerollCountToday: 0,
+        neuralMissionCompletedToday: false,
         player: nextPlayer,
         mood: Math.max(0, g.mood - 10 - moodPenalty),
         dreamLog: [
@@ -2219,6 +3848,8 @@ export default function DreamGuardian() {
       day: g.day + 1,
       voidData: null, battle: null,
       talkedToday: false, scavengedToday: false,
+      rerollCountToday: 0,
+      neuralMissionCompletedToday: false,
       player: { ...g.player, hp: totalMaxHp, mp: totalMaxMp },
       mood: Math.max(0, g.mood - 10),
     }));
@@ -2420,6 +4051,10 @@ export default function DreamGuardian() {
   const MAX_FORGE = 5;
 
   function forgeItems(baseId, fl) {
+    if (baseId === "psyche" || baseId === "deja_vu" || baseId === "dejavu") {
+      notify("Psyche and Déjà Vu cannot be forged/merged!");
+      return;
+    }
     if (fl >= MAX_FORGE) return;
     const candidates = allOwnedItems.filter(i => 
       (i.id || i.baseName || i.name) === baseId && (i.forgeLevel || 0) === fl
@@ -2437,6 +4072,7 @@ export default function DreamGuardian() {
     const firstRef = candidates[0];
     const secondRef = candidates[1];
 
+    const originalDesc = getOriginalDesc(base);
     const forged = {
       id:         base.id,
       ico:        base.ico,
@@ -2448,9 +4084,9 @@ export default function DreamGuardian() {
       name:       (base.baseName || base.name) + " " + stars,
       forgeLevel: newLevel,
       effect:     newEffect,
-      desc:       Object.entries(newEffect).map(([k, v]) => {
-                    return "+" + v + " " + k.toUpperCase();
-                  }).join(", "),
+      desc:       isStatOnlyDescription(originalDesc)
+                  ? Object.entries(newEffect).map(([k, v]) => "+" + v + " " + k.toUpperCase()).join(", ")
+                  : originalDesc,
     };
 
     const equipSlot = firstRef.isEquipped ? firstRef.slotName : (secondRef.isEquipped ? secondRef.slotName : null);
@@ -2516,13 +4152,16 @@ export default function DreamGuardian() {
       newEffect[k] = Math.floor(v * 1.45); // Increase by 45% each ascension step!
     });
 
+    const originalDesc = getOriginalDesc(targetItem);
     const ascendedItem = {
       ...targetItem,
       uid: targetItem.uid, // Keep the same UID to retain equip status!
       forgeLevel: newLevel,
       name: `${baseName} ★★★★★ (+${ascensionNum})`,
       effect: newEffect,
-      desc: Object.entries(newEffect).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(", "),
+      desc: isStatOnlyDescription(originalDesc)
+            ? Object.entries(newEffect).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(", ")
+            : originalDesc,
     };
 
     setGame(g => {
@@ -2559,19 +4198,437 @@ export default function DreamGuardian() {
     notify(`🧬 Successfully Ascended ${baseName} to +${ascensionNum}! Stats surged!`);
   }
 
-  // ── Intro Screen ───────────────────────────────────────────
-  if (showIntro) return (
-    <div style={{ minHeight:"100vh", background:ROOT_BG, color:"#ddd6fe", display:"flex", alignItems:"center", justifyValue:"center", padding:20, fontFamily:"sans-serif", justifyContent:"center" }}>
-      <div style={{ maxWidth:580, background:"rgba(10,0,30,0.9)", border:"1px solid rgba(139,92,246,0.3)", borderRadius:24, padding:28 }}>
-        <div style={{ fontSize:12, letterSpacing:5, color:"#8b5cf6", marginBottom:12 }}>DREAM GUARDIAN</div>
-        <div style={{ fontSize:40, fontWeight:"bold", marginBottom:18 }}>🌙 Luna & Alex</div>
-        <div style={{ lineHeight:2, fontSize:15, color:"#c4b5fd", whiteSpace:"pre-line", marginBottom:24 }}>{introText}</div>
-        <button onClick={() => setShowIntro(false)} style={{ width:"100%", background:"#7c3aed", border:"none", color:"white", padding:"16px", borderRadius:16, fontSize:16, fontWeight:"bold", cursor:"pointer" }}>
-          ✨ Enter The Dreamscape
-        </button>
+  // ── Game Endings and Post-game confirmation over 200 nights ────
+  if (game.gameCompleted) {
+    const alexStatus = game.mood > 1000 ? "Awesome 🌟" : "Stressed/Deprived 🌙";
+    const isAwesome = game.mood > 1000;
+    
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: "radial-gradient(circle at center, #0f0022 0%, #030008 100%)",
+        color: "#ddd6fe",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        fontFamily: "Inter, sans-serif"
+      }}>
+        <div style={{
+          maxWidth: 650,
+          width: "100%",
+          background: "rgba(10, 3, 24, 0.96)",
+          border: isAwesome ? "2px solid #34d399" : "2px solid #ef4444",
+          boxShadow: isAwesome ? "0 0 50px rgba(52, 211, 153, 0.25)" : "0 0 50px rgba(239, 68, 68, 0.2)",
+          borderRadius: 24,
+          padding: resp.isMobile ? "24px 20px" : "40px 36px",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 20
+        }}>
+          <div style={{ fontSize: 64, filter: "drop-shadow(0 0 12px rgba(168, 85, 247, 0.5))" }}>
+            {isAwesome ? "☀️" : "🌧️"}
+          </div>
+          <h2 style={{ fontSize: "28px", fontWeight: "bold", letterSpacing: "-0.05em", color: isAwesome ? "#34d399" : "#ef4444" }}>
+            {isAwesome ? "☀️ EPILOGUE: A SANCTUARY OF PEACE" : "🌙 EPILOGUE: THE LINGERING SHADOW"}
+          </h2>
+          <div style={{ fontSize: "14px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a78bfa" }}>
+            {isAwesome ? "Good Ending: Perfect Harmony" : "Bad Ending: Weary Souls"}
+          </div>
+          
+          <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px 18px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(255,255,255,0.05)" }}>
+            💖 Final Bond Level: <strong style={{ color: "#f472b6" }}>{game.bond || 0} / 200</strong> | 🧠 Alex's Mood: <strong style={{ color: isAwesome ? "#34d399" : "#ef4444" }}>{game.mood} ({alexStatus})</strong>
+          </div>
+
+          <p style={{ fontSize: "15px", lineHeight: "1.7", color: "#cbd5e1", textAlign: "justify", whiteSpace: "pre-wrap" }}>
+            {isAwesome 
+              ? "Through 200 nights of relentless vigil, you have successfully shielded Alex's soul from the darkest nightmares of the void. Your deep bond and constant care kept Alex's heart intact, their mind clean, and their mood Awesome.\n\nNow, morning rises on a peaceful home. Alex wakes up smiling, feeling lighter and happier than they have in years. They scratch you behind the ears and prepare a gourmet salmon feast. You curl up together under the warm sunlight, realizing that your endless watch was worth every single battle. The shadows have retreated, and the peace you fought for is finally here to stay."
+              : "You survived 200 nights of terror, but the sheer weight of the nightmares has taken their toll. Though physically safe from direct demise, Alex's mind remains frayed, Stressed, or Deprived—the persistent strain of the void has left their spirit dark and exhausted.\n\nAlex wakes up tired, sighing heavily as they look at the gray dawn outside. They feed you in anxious silence, distracted by the unseen worries that still clutter their thoughts. You curl up at the foot of the bed, feeling the distant, unresolved coldness of the Dreamscape whispering beneath reality. You did what you could to keep them alive, but the emotional peace you both so desperately craved lies just out of reach."
+            }
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: 12, marginTop: 10 }}>
+            <button
+              onClick={() => {
+                setGame(g => ({ ...g, gameCompleted: false, hasConfirmedPost200: true }));
+                notify("Entering the Post-Game Endless Nightmare! Stats x2.");
+              }}
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: 12,
+                background: "#6d28d9",
+                color: "white",
+                fontWeight: "bold",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              🌌 Change Mind: Continue Endless Progression (Enter Post-Game)
+            </button>
+
+            <button
+              onClick={() => {
+                if (confirm("Are you sure you want to reset all game data and start over? This cannot be undone.")) {
+                  deleteSave();
+                }
+              }}
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: 12,
+                background: "rgba(239, 68, 68, 0.15)",
+                color: "#f87171",
+                fontWeight: "bold",
+                border: "1px solid rgba(239, 68, 68, 0.3)",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              🔄 Start A Brand New Journey (Restarts Progression)
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Detect and ask for confirmation on Day 201+ if not choosing to continue yet
+  if (game.day >= 201 && !game.hasConfirmedPost200) {
+    const alexStatus = game.mood > 1000 ? "Awesome 🌟" : "Stressed/Deprived 🌙";
+
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: "radial-gradient(circle at center, #110022 0%, #030009 100%)",
+        color: "#ddd6fe",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        fontFamily: "Inter, sans-serif"
+      }}>
+        <div style={{
+          maxWidth: 600,
+          width: "100%",
+          background: "rgba(12, 4, 28, 0.95)",
+          border: "2px solid #8b5cf6aa",
+          boxShadow: "0 0 50px rgba(139, 92, 246, 0.2)",
+          borderRadius: 24,
+          padding: resp.isMobile ? "24px 20px" : "40px 36px",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 20
+        }}>
+          <div style={{ fontSize: 64 }}>🛡️🐈️</div>
+          <h2 style={{ fontSize: "26px", fontWeight: "bold", letterSpacing: "-0.05em", color: "#ddd6fe" }}>
+            The 200th Night has Settled
+          </h2>
+          <div style={{ fontSize: "14px", color: "#a78bfa", fontWeight: "500", letterSpacing: "0.05em" }}>
+            NARRATIVE SAGA COMPLETED
+          </div>
+
+          <p style={{ fontSize: "14px", lineHeight: "1.6", color: "#cbd5e1" }}>
+            Congratulations, Dream Guardian! You have navigated the core 200 nights of the Dreamscape and guarded Alex's mind.
+            <br /><br />
+            Alex's current mood is <strong>{alexStatus}</strong> ({game.mood} pts). You can now choose to conclude the journey and witness the Ending, or continue into the bottomless depth of the Endless Nightmare.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: 12, marginTop: 10 }}>
+            <button
+              onClick={() => {
+                setGame(g => ({ ...g, hasConfirmedPost200: true }));
+                notify("Endless Nightmare activated! Normal & Boss enemies are now 2x stronger!");
+              }}
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: 12,
+                background: "#7c3aed",
+                color: "white",
+                fontWeight: "bold",
+                border: "none",
+                cursor: "pointer"
+              }}
+            >
+              🌌 Yes, Continue Progression (Enemies & Bosses x2 Stats)
+            </button>
+
+            <button
+              onClick={() => {
+                setGame(g => ({ ...g, gameCompleted: true }));
+              }}
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: 12,
+                background: "rgba(255, 255, 255, 0.05)",
+                color: "#ddd6fe",
+                fontWeight: "bold",
+                border: "1px solid rgba(139, 92, 246, 0.4)",
+                cursor: "pointer"
+              }}
+            >
+              ☀️ No, Conclude and View Ending
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Story Act Overlays (Part 4, #9) ──────────────────────────
+  if (activeStoryAct) {
+    const act = STORY_ACTS[activeStoryAct];
+    if (act) {
+      let buttonLabel = "✨ Enter the Dreamscape";
+      if (activeStoryAct === "prologue") buttonLabel = "✨ Discover the Portal";
+      else if (activeStoryAct === "act1") buttonLabel = "⚔️ Step Through the Violet Tear";
+      else if (activeStoryAct === "act2") buttonLabel = "⚡ Channel Dream Essence";
+      else if (activeStoryAct === "act3") buttonLabel = "🌌 Face the Ultimate Sacrifice";
+      else if (activeStoryAct === "epilogue") buttonLabel = "☀️ Awaken to Morning Light";
+
+      return (
+        <div style={{
+          minHeight: "100vh",
+          background: "radial-gradient(circle at center, #1b003a 0%, #060012 100%)",
+          color: "#ddd6fe",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+          fontFamily: "Inter, sans-serif"
+        }}>
+          <div style={{
+            maxWidth: 600,
+            width: "100%",
+            background: "rgba(12, 4, 28, 0.95)",
+            border: `2px solid ${act.color}aa`,
+            boxShadow: `0 0 50px ${act.color}25`,
+            borderRadius: 28,
+            padding: resp.isMobile ? "24px 20px" : "40px 36px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16
+          }}>
+            <div style={{
+              fontSize: 64,
+              lineHeight: 1,
+              filter: `drop-shadow(0 0 10px ${act.color})`,
+              marginBottom: 8
+            }}>
+              {act.banner}
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{
+                fontSize: 12,
+                letterSpacing: 4,
+                textTransform: "uppercase",
+                color: act.color,
+                fontWeight: "bold"
+              }}>
+                {act.subtitle}
+              </div>
+              <h1 style={{
+                fontSize: resp.isMobile ? 24 : 32,
+                fontWeight: 800,
+                color: "#ffffff",
+                letterSpacing: "-0.025em",
+                margin: 0
+              }}>
+                {act.title}
+              </h1>
+            </div>
+
+            <div style={{
+              borderBottom: "1px solid rgba(139, 92, 246, 0.15)",
+              width: "40%",
+              margin: "4px auto 8px"
+            }} />
+
+            <div style={{
+              lineHeight: 1.85,
+              fontSize: resp.isMobile ? 14 : 15,
+              color: "#c4b5fd",
+              whiteSpace: "pre-line",
+              textAlign: "left",
+              maxHeight: "50vh",
+              overflowY: "auto",
+              paddingRight: 8,
+              marginBottom: 16,
+              opacity: 0.95
+            }}>
+              {act.text}
+            </div>
+
+            <button
+              onClick={handleContinueStoryAct}
+              style={{
+                width: "100%",
+                background: `linear-gradient(135deg, ${act.color}dd 0%, ${act.color}aa 100%)`,
+                border: `1px solid ${act.color}`,
+                boxShadow: `0 4px 15px ${act.color}35`,
+                color: "white",
+                padding: "16px 24px",
+                borderRadius: 16,
+                fontSize: 16,
+                fontWeight: "bold",
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                outline: "none"
+              }}
+            >
+              {buttonLabel}
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // ── Event / Achievement Overlay (Part 6, #10) ────────────────
+  if (activeOverlay) {
+    const isPayoff = activeOverlay.category === "payoff";
+    return (
+      <div style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(6, 2, 16, 0.92)",
+        backdropFilter: "blur(8px)",
+        color: "#ddd6fe",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        fontFamily: "Inter, sans-serif",
+        zIndex: 99999
+      }}>
+        <div style={{
+          maxWidth: 520,
+          width: "100%",
+          background: "rgba(13, 6, 32, 0.98)",
+          border: `2px solid ${activeOverlay.color}cc`,
+          boxShadow: `0 0 45px ${activeOverlay.color}35`,
+          borderRadius: 24,
+          padding: resp.isMobile ? "24px 20px" : "36px 32px",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 16
+        }}>
+          <div style={{
+            fontSize: 64,
+            lineHeight: 1,
+            filter: `drop-shadow(0 0 12px ${activeOverlay.color})`,
+            marginBottom: 4
+          }}>
+            {activeOverlay.banner}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <div style={{
+              fontSize: 10,
+              letterSpacing: 4,
+              textTransform: "uppercase",
+              color: activeOverlay.color,
+              fontWeight: "900",
+              background: `rgba(${isPayoff ? "139,92,246" : "251,191,36"}, 0.12)`,
+              padding: "4px 12px",
+              borderRadius: 20,
+              border: `1px solid ${activeOverlay.color}40`,
+              display: "inline-block",
+              alignSelf: "center",
+              marginBottom: 6
+            }}>
+              {isPayoff ? "🌅 Emotional well-being" : "🏆 Dream Archive Achievement"}
+            </div>
+            <h1 style={{
+              fontSize: resp.isMobile ? 22 : 26,
+              fontWeight: 800,
+              color: "#ffffff",
+              letterSpacing: "-0.02em",
+              margin: 0
+            }}>
+              {activeOverlay.title}
+            </h1>
+            <div style={{ fontSize: 13, color: "#9ca3af" }}>
+              {activeOverlay.subtitle}
+            </div>
+          </div>
+
+          <div style={{
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            width: "50%",
+            margin: "2px auto"
+          }} />
+
+          <div style={{
+            lineHeight: 1.8,
+            fontSize: resp.isMobile ? 13 : 14,
+            color: "#c4b5fd",
+            whiteSpace: "pre-line",
+            textAlign: "left",
+            maxHeight: "35vh",
+            overflowY: "auto",
+            paddingRight: 6,
+            opacity: 0.95
+          }}>
+            {activeOverlay.text}
+          </div>
+
+          {activeOverlay.bonus && (
+            <div style={{
+              background: `linear-gradient(135deg, rgba(15, 6, 32, 0.8) 0%, rgba(${isPayoff ? "52,211,153" : "251,191,36"}, 0.08) 100%)`,
+              border: `1px solid ${isPayoff ? "#34d39940" : "#fbbf2440"}`,
+              borderRadius: 14,
+              padding: 12,
+              width: "100%",
+              textAlign: "center",
+              fontSize: 13,
+              color: isPayoff ? "#34d399" : "#fde68a",
+              fontWeight: "600",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.2)"
+            }}>
+              {activeOverlay.bonus}
+            </div>
+          )}
+
+          <button
+            onClick={handleCloseOverlay}
+            style={{
+              width: "100%",
+              background: `linear-gradient(135deg, ${activeOverlay.color}dd 0%, ${activeOverlay.color}aa 100%)`,
+              border: `1px solid ${activeOverlay.color}`,
+              boxShadow: `0 4px 18px ${activeOverlay.color}40`,
+              color: "white",
+              padding: "14px 24px",
+              borderRadius: 14,
+              fontSize: 15,
+              fontWeight: "bold",
+              cursor: "pointer",
+              transition: "all 0.15s ease-in-out",
+              outline: "none",
+              textTransform: "uppercase"
+            }}
+          >
+            {isPayoff ? "❤️ Pet Luna & Continue" : "✨ Claim & Close"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dg-page" style={{ minHeight:"100dvh", background:ROOT_BG, color:"#ddd6fe", fontFamily:"sans-serif", padding: resp.isMobile ? "12px 10px" : 16, boxSizing:"border-box", overflowX:"hidden" }}>
@@ -2615,11 +4672,34 @@ export default function DreamGuardian() {
             </div>
             <StatBar value={game.player.xp || 0} max={getXpNeeded(game.player.level || 1)} color="#f59e0b" />
           </div>
-          <div style={{ marginTop:14, display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(80px,1fr))", gap:8, fontSize:13 }}>
+          <div style={{ marginTop:14, display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(80px,1fr))", gap:8, fontSize:13, alignItems:"center" }}>
             <div>🪙 {game.player.coins}</div>
             <div>💎 {game.player.shards || 0}</div>
-            <div>📅 Day {game.day}</div>
-            <div>⚔️ ATK {totalAtk}</div>
+            <div>
+              <div>📅 Day {game.day}</div>
+              <div style={{ fontSize: 9, color: "#a78bfa", marginTop: 2 }}>
+                {getGamePhase(game.day).name}
+              </div>
+            </div>
+            <button
+              onClick={() => setShowStatsModal(true)}
+              style={{
+                background: "rgba(139, 92, 246, 0.2)",
+                border: "1px solid rgba(139, 92, 246, 0.4)",
+                borderRadius: 8,
+                color: "#c4b5fd",
+                padding: "2px 8px",
+                fontSize: 12,
+                fontWeight: "bold",
+                cursor: "pointer",
+                textAlign: "center",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(139, 92, 246, 0.35)"; e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.6)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(139, 92, 246, 0.2)"; e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.4)"; }}
+            >
+              📊 Stats
+            </button>
           </div>
         </Card>
 
@@ -2636,7 +4716,7 @@ export default function DreamGuardian() {
             <span style={{ color:currentTier.color, fontWeight:"bold", fontSize:13 }}>{currentTier.label}</span>
             <span style={{ fontSize:12, color:"#a78bfa" }}>{game.mood} / 1500</span>
           </div>
-          <StatBar value={game.mood} max={1500} color={currentTier.color} />
+          <StatBar value={game.mood} max={1500} color={currentTier.color} lockedPct={(isBattle && game.battle?.enemyQueue?.some(e => e.id === "apnea")) ? 5 : 0} />
         </Card>
 
         {/* Phase Handler Cards */}
@@ -2692,6 +4772,14 @@ export default function DreamGuardian() {
 
                   {merchantTab === "mouse" && (
                     <div style={{ display:"grid", gap:9, marginBottom:14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(139,92,246,0.08)", padding: "10px 12px", borderRadius: 12, border: "1px dashed rgba(139,92,246,0.25)", marginBottom: 4 }}>
+                        <div style={{ fontSize: 11, color: "#cbd5e1" }}>
+                          🔄 Re-roll Mouse Stock (Cost: <strong style={{ color: "#fbbf24" }}>🪙10</strong>)
+                        </div>
+                        <button onClick={() => rerollMerchant("mouse")} style={{ background: "#7c3aed", border: "none", color: "white", padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontWeight: "bold", fontSize: 11, fontFamily: "sans-serif" }}>
+                          Re-roll
+                        </button>
+                      </div>
                       {game.dailyMouseItems.length === 0
                         ? <div style={{ color:"#6d28d9", fontSize:13 }}>Nothing in stock today.</div>
                         : game.dailyMouseItems.map((item, i) => {
@@ -2717,9 +4805,14 @@ export default function DreamGuardian() {
                           return (
                             <div key={i} style={{ background:"rgba(255,255,255,0.04)", padding:12, borderRadius:13, display:"flex", justifyContent:"space-between", alignItems:"center", gap:12, opacity: isSoldOut ? 0.6 : 1 }}>
                               <div>
-                                <div style={{ fontWeight:"bold" }}>
-                                  {item.ico} {item.name}
-                                  <span style={{ fontSize:10, color: isSoldOut ? "#f87171" : "#a78bfa", marginLeft:6 }}>
+                                <div style={{ fontWeight:"bold", display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                                  <span>{item.ico} {item.name}</span>
+                                  {item.slot && (
+                                    <span style={{ fontSize:9, background:"rgba(167,139,250,0.15)", color:"#c4b5fd", padding:"1px 6px", borderRadius:4, fontWeight:"bold" }}>
+                                      {slotDisplayName(item.slot)}
+                                    </span>
+                                  )}
+                                  <span style={{ fontSize:10, color: isSoldOut ? "#f87171" : "#a78bfa" }}>
                                     ({isSoldOut ? "Out of Stock" : `Stock: ${stock}`})
                                   </span>
                                 </div>
@@ -2739,6 +4832,14 @@ export default function DreamGuardian() {
 
                   {merchantTab === "mappy" && game.mappyAvailable && (
                     <div style={{ display:"grid", gap:9, marginBottom:14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(245,158,11,0.08)", padding: "10px 12px", borderRadius: 12, border: "1px dashed rgba(245,158,11,0.25)", marginBottom: 4 }}>
+                        <div style={{ fontSize: 11, color: "#cbd5e1" }}>
+                          🔄 Re-roll Mappy Stock (Cost: <strong style={{ color: "#fbbf24" }}>🪙10</strong>)
+                        </div>
+                        <button onClick={() => rerollMerchant("mappy")} style={{ background: "#b45309", border: "none", color: "white", padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontWeight: "bold", fontSize: 11, fontFamily: "sans-serif" }}>
+                          Re-roll
+                        </button>
+                      </div>
                       {game.dailyMappyItems.length === 0
                         ? <div style={{ color:"#b45309", fontSize:13 }}>Nothing in stock today.</div>
                         : game.dailyMappyItems.map((item, i) => {
@@ -2764,9 +4865,14 @@ export default function DreamGuardian() {
                           return (
                             <div key={i} style={{ background:"rgba(180,83,9,0.08)", border:"1px solid rgba(180,83,9,0.2)", padding:12, borderRadius:13, display:"flex", justifyContent:"space-between", alignItems:"center", gap:12, opacity: isSoldOut ? 0.6 : 1 }}>
                               <div>
-                                <div style={{ fontWeight:"bold" }}>
-                                  {item.ico} {item.name}
-                                  <span style={{ fontSize:10, color: isSoldOut ? "#ef4444" : "#fbbf24", marginLeft:6 }}>
+                                <div style={{ fontWeight:"bold", display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                                  <span>{item.ico} {item.name}</span>
+                                  {item.slot && (
+                                    <span style={{ fontSize:9, background:"rgba(245,158,11,0.15)", color:"#f59e0b", padding:"1px 6px", borderRadius:4, fontWeight:"bold" }}>
+                                      {slotDisplayName(item.slot)}
+                                    </span>
+                                  )}
+                                  <span style={{ fontSize:10, color: isSoldOut ? "#ef4444" : "#fbbf24" }}>
                                     ({isSoldOut ? "Out of Stock" : `Stock: ${stock}`})
                                   </span>
                                 </div>
@@ -2926,6 +5032,40 @@ export default function DreamGuardian() {
           )}
         </Card>
 
+        {/* Keeper of Dreams (after Day 7) */}
+        {game.phase === "day" && game.day > 7 && (
+          <Card style={{ border: "1px dashed rgba(139,92,246,0.6)", background: "rgba(11, 0, 26, 0.55)", position: "relative", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 30 }}>🌌</span>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: "bold", color: "#ddd6fe" }}>The Keeper of Dreams</div>
+                  <div style={{ fontSize: 12, color: "#a78bfa", marginTop: 2 }}>
+                    {game.day > 14 ? "Reconstruct brain sectors" : "Requires Day 15+ to unlock sectors"}
+                  </div>
+                </div>
+              </div>
+              <button 
+                id="btn-keeper-portal"
+                onClick={() => setShowKeeperModal(true)} 
+                style={{ 
+                  background: game.neuralMissionCompletedToday ? "rgba(75,85,99,0.4)" : "#6d28d9", 
+                  border: "none", 
+                  color: "white", 
+                  padding: "10px 18px", 
+                  borderRadius: 12, 
+                  cursor: "pointer", 
+                  fontWeight: "bold", 
+                  fontSize: 13,
+                  boxShadow: "0 0 10px rgba(139,92,246,0.25)"
+                }}
+              >
+                {game.neuralMissionCompletedToday ? "Completed" : "Enter Portal"}
+              </button>
+            </div>
+          </Card>
+        )}
+
         {/* Upgrade Tree Launcher */}
         <Card>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
@@ -3060,6 +5200,14 @@ export default function DreamGuardian() {
         />
       )}
 
+      {showKeeperModal && (
+        <KeeperOfDreamsModal
+          game={game}
+          onClose={() => setShowKeeperModal(false)}
+          onReward={onKeeperReward}
+        />
+      )}
+
       {game.battle && (
         <BattleOverlay
           game={game}
@@ -3070,6 +5218,7 @@ export default function DreamGuardian() {
           onSkill={doSkill}
           onFlee={handleFleeBattle}
           setActiveModalInfo={setActiveModalInfo}
+          onShowStats={() => setShowStatsModal(true)}
         />
       )}
 
@@ -3086,6 +5235,7 @@ export default function DreamGuardian() {
           equipItem={equipItem}
           unequipItem={unequipItem}
           hasMaxForgedItem={hasMaxForgedItem}
+          onReroll={rerollMerchant}
         />
       )}
 
@@ -3141,6 +5291,230 @@ export default function DreamGuardian() {
               padding: "10px 20px", borderRadius: 10, fontWeight: "bold",
               cursor: "pointer", fontSize: 13, minWidth: 100
             }}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {showStatsModal && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 1200, padding: 20, fontFamily: "sans-serif"
+        }}>
+          <div style={{
+            background: "#0d001f", border: "1px solid rgba(139,92,246,0.4)",
+            borderRadius: 24, padding: 24, maxWidth: 480, width: "100%",
+            color: "#ddd6fe", boxShadow: "0 15px 35px rgba(0,0,0,0.7)",
+            maxHeight: "90vh", overflowY: "auto"
+          }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+              <div style={{ fontSize: 20, fontWeight: "bold", color: "#fca5a5", display:"flex", alignItems:"center", gap:8 }}>
+                <span>🐱</span> Luna's Cosmic Stats
+              </div>
+              <button onClick={() => setShowStatsModal(false)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.4)", fontSize:20, cursor:"pointer" }}>✕</button>
+            </div>
+
+            <div style={{ marginBottom: 20, fontSize:12, color:"#a78bfa", borderBottom:"1px solid rgba(139,92,246,0.2)", paddingBottom:10 }}>
+              An overview of Luna's permanent enhancements and active equipment stats.
+            </div>
+
+            {/* Basic Info block */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16, background:"rgba(255,255,255,0.03)", padding:12, borderRadius:12 }}>
+              <div>⭐ Level: <strong>{game.player.level || 1}</strong></div>
+              <div>📈 XP: <strong>{(game.player.xp || 0).toFixed(0)}/{getXpNeeded(game.player.level || 1)}</strong></div>
+              <div>🪙 Coins: <strong>{game.player.coins}</strong></div>
+              <div>💎 Shards: <strong>{game.player.shards || 0}</strong></div>
+            </div>
+
+            <div style={{ display: "grid", gap: 14 }}>
+              {/* Category: Vitality & Power */}
+              <div>
+                <div style={{ fontSize:11, letterSpacing:2, color:"#a78bfa", fontWeight:"bold", marginBottom:6, borderBottom:"1px solid rgba(139,92,246,0.1)", paddingBottom:2 }}>VITALITY & POWER</div>
+                
+                {/* HP */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>❤️ Max HP:</span>
+                  <span style={{ fontWeight:"bold", color:"#ef4444" }}>
+                    {totalMaxHp} <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Base {game.player.maxHp} + Gear {equippedStats.maxHp || 0})</span>
+                  </span>
+                </div>
+
+                {/* MP */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>🔮 Max MP:</span>
+                  <span style={{ fontWeight:"bold", color:"#a78bfa" }}>
+                    {totalMaxMp} <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Base {game.player.maxMp} + Gear {equippedStats.maxMp || 0}{skillMaxMp > 0 ? ` + Skill ${skillMaxMp}` : ""})</span>
+                  </span>
+                </div>
+
+                {/* ATK */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>⚔️ Physical ATK:</span>
+                  <span style={{ fontWeight:"bold", color:"#fde68a" }}>
+                    {totalAtk} <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Base {game.player.atk} + Gear {equippedStats.atk || 0}{skillAtk > 0 ? ` + Skill ${skillAtk}` : ""})</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Category: Defense & Survival */}
+              <div>
+                <div style={{ fontSize:11, letterSpacing:2, color:"#a78bfa", fontWeight:"bold", marginBottom:6, borderBottom:"1px solid rgba(139,92,246,0.1)", paddingBottom:2 }}>DEFENSE & SURVIVAL</div>
+
+                {/* DEF (Blocked damage) */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>🛡️ General Block (DEF):</span>
+                  <span style={{ fontWeight:"bold", color:"#60a5fa" }}>
+                    +{skillDef + skillMDef} damage <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Phys +{skillDef} / Mag +{skillMDef})</span>
+                  </span>
+                </div>
+
+                {/* DR % */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>👕 Damage Reduction (DR):</span>
+                  <span style={{ fontWeight:"bold", color:"#34d399" }}>
+                    {equipDr}% <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(from Armor)</span>
+                  </span>
+                </div>
+
+                {/* Thorns */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>⚡ Thorns Reflection:</span>
+                  <span style={{ fontWeight:"bold", color:"#f43f5e" }}>
+                    {equipThorns}% <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Reflects back to attacker)</span>
+                  </span>
+                </div>
+
+                {/* Dodge / Speed */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>🏃 Dodge Chance (Speed):</span>
+                  <span style={{ fontWeight:"bold", color:"#c4b5fd" }}>
+                    {spdPower}% <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Base dodge chance from movement)</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Category: Offensive & Combat Specs */}
+              <div>
+                <div style={{ fontSize:11, letterSpacing:2, color:"#a78bfa", fontWeight:"bold", marginBottom:6, borderBottom:"1px solid rgba(139,92,246,0.1)", paddingBottom:2 }}>COMBAT SPECS</div>
+
+                {/* Crit Chance */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>✨ Critical Strike Rate:</span>
+                  <span style={{ fontWeight:"bold", color:"#fbbf24" }}>
+                    {skillCrit + (equippedStats.crit || 0)}% <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Skill {skillCrit}% + Gear {equippedStats.crit || 0}%)</span>
+                  </span>
+                </div>
+
+                {/* Crit Multiplier */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>💥 Critical Multiplier:</span>
+                  <span style={{ fontWeight:"bold", color:"#fb7185" }}>
+                    {critMultiplier}% <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Base 200%)</span>
+                  </span>
+                </div>
+
+                {/* Attack Speed */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>⏳ Attack Speed:</span>
+                  <span style={{ fontWeight:"bold", color:"#4ade80" }}>
+                    {attackSpeed}% <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Base 100%)</span>
+                  </span>
+                </div>
+
+                {/* Vampirism */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>🧛 Vampirism (Lifesteal):</span>
+                  <span style={{ fontWeight:"bold", color:"#f43f5e" }}>
+                    {vampPower}% <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Heals from hit damage)</span>
+                  </span>
+                </div>
+
+                {/* Armor Pen */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>🌌 Armor Penetration:</span>
+                  <span style={{ fontWeight:"bold", color:"#60a5fa" }}>
+                    +{penPower} Pierce <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Ignores physical defense)</span>
+                  </span>
+                </div>
+
+                {/* MP Regen */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>💧 Turn MP Regen:</span>
+                  <span style={{ fontWeight:"bold", color:"#60a5fa" }}>
+                    +{skillRegen} MP <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(per action)</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Utility stats */}
+              <div>
+                <div style={{ fontSize:11, letterSpacing:2, color:"#a78bfa", fontWeight:"bold", marginBottom:6, borderBottom:"1px solid rgba(139,92,246,0.1)", paddingBottom:2 }}>UTILITY</div>
+
+                {/* Scavenging luck */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>🍀 Scavenge Luck Bonus:</span>
+                  <span style={{ fontWeight:"bold", color:"#34d399" }}>
+                    +{skillLuck}% spawn rate <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Scent Tracker)</span>
+                  </span>
+                </div>
+
+                {/* Physical MP cost reduction */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>🌀 MP Cost Reduction (Phys):</span>
+                  <span style={{ fontWeight:"bold", color:"#818cf8" }}>
+                    -{skillStam}% <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Feline Grace)</span>
+                  </span>
+                </div>
+
+                {/* Bonus shards */}
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"2px 0" }}>
+                  <span>💎 Nightmare Shard Bonus:</span>
+                  <span style={{ fontWeight:"bold", color:"#c084fc" }}>
+                    +{skillExpBonus} shards <span style={{ fontSize:11, fontWeight:"normal", color:"#9ca3af" }}>(Dreamweaver clears)</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Combat modifier status notice */}
+            {game.battle && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%", marginBottom: 12 }}>
+                <div style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.35)", borderRadius: 14, padding: 12, display: "flex", flexDirection: "column" }}>
+                  <div style={{ fontWeight: "bold", color: "#fbbf24", fontSize: 13, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                    <span>{game.battle.currentForm === "hybrid" ? "🔮" : "🐾"}</span> Active Form: {game.battle.currentForm === "hybrid" ? "Hybrid Form" : "Feral Form"}
+                  </div>
+                  {game.battle.currentForm === "feral" ? (
+                    <div style={{ fontSize: 12, color: "#c4b5fd", display: "grid", gap: 3 }}>
+                      <div>🏃 Feral Movement Speed: <strong>{feralMovementSpeed} m/s</strong></div>
+                      <div>🌪️ Evasion Modifier: <strong>{Math.floor((1.0 + (activeUpgrades.f3 || 0) * 0.15) * 100)}%</strong></div>
+                      <div>🎯 Combat Dodge rate: <strong>{Math.floor((feralMovementSpeed * 1.5) * (1.0 + (activeUpgrades.f3 || 0) * 0.15))}%</strong></div>
+                      <div style={{ fontSize: 10, opacity: 0.8, color: "#9ca3af", marginTop: 4 }}>
+                        🐾 Feral form centers on movement speed, quick actions, bleed overlays, and critical strikes.
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 12, color: "#c4b5fd", display: "grid", gap: 3 }}>
+                      <div>🛡️ Hybrid Block Armor: <strong>{hybridDef} DEF</strong> <span style={{ fontSize: 10, color: "#9ca3af" }}>(1.5x of Feral defense)</span></div>
+                      <div>🛡️ Debuff Resistance: <strong>{(2.5 * hybridDef).toFixed(1)}% Chance</strong> <span style={{ fontSize: 10, color: "#9ca3af" }}>(Blocks REM dodge decay)</span></div>
+                      <div>🛡️ Active Barrier HP: <strong>{Math.floor(hybridDef * 0.7)} Shield</strong> <span style={{ fontSize: 10, color: "#9ca3af" }}>(70% of defense)</span></div>
+                      <div style={{ fontSize: 10, opacity: 0.8, color: "#9ca3af", marginTop: 4 }}>
+                        🔮 Hybrid form focuses on armor thickness, cleansing, shields, and multi-target magic splash.
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 10, fontSize: 11, color: "#9ca3af" }}>
+                  🎯 <strong>Active Combat Specs:</strong> Feral and Hybrid skills are partitioned. Skills and bonuses of the inactive form do not take effect during combat.
+                </div>
+              </div>
+            )}
+
+            <button onClick={() => setShowStatsModal(false)} style={{
+              background: "#7c3aed", color: "white", border: "none",
+              padding: "12px 16px", borderRadius: 12, fontWeight: "bold",
+              cursor: "pointer", fontSize: 14, width:"100%", marginTop: 20
+            }}>✕ Close Stats</button>
           </div>
         </div>
       )}

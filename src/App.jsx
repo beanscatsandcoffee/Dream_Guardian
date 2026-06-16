@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-import imgFogling from "./assets/images/fogling_1781225256283.jpg";
-import imgNightHound from "./assets/images/night_hound_1781225280037.jpg";
-import imgShadeWraith from "./assets/images/shade_wraith_1781225293492.jpg";
-import imgAnxietyWisp from "./assets/images/anxiety_wisp_1781225306047.jpg";
-import imgMemoryGhoul from "./assets/images/memory_ghoul_1781225318194.jpg";
-import imgLucidWeaver from "./assets/images/lucid_weaver_1781225331325.jpg";
-import imgHypCrawler from "./assets/images/hyp_crawler_1781225345010.jpg";
-import imgSomCrawler from "./assets/images/somatic_crawler_1781225360180.jpg";
-import imgAethPhantasm from "./assets/images/aeth_phantasm_1781225374184.jpg";
-import imgInsomniaTitan from "./assets/images/insomnia_titan_1781225393737.jpg";
-import imgRemBoss from "./assets/images/rem_boss_1781225405134.jpg";
+import imgFogling from "./assets/images/2bb1c6df-2466-4730-a4cf-c7549b2059d6.jpg";
+import imgNightHound from "./assets/images/33ed7413-a0dd-4fb6-b821-dd08882b3e62.jpg";
+import imgShadeWraith from "./assets/images/48cf5c91-027d-423f-9bc0-957b7307a07f.jpg";
+import imgAnxietyWisp from "./assets/images/694d85a4-7ad9-414e-83ef-9c22691c9235.jpg";
+import imgMemoryGhoul from "./assets/images/7151ce81-dea4-4a94-9915-c9b5f439a08b.jpg";
+import imgLucidWeaver from "./assets/images/8009f36e-190b-4303-be73-4edbd99a0b4e.jpg";
+import imgHypCrawler from "./assets/images/80697eb1-3362-4033-8d37-e9d624cd06de.jpg";
+import imgSomCrawler from "./assets/images/8f429d18-4fbf-4251-b7c1-038e91b9940c.jpg";
+import imgAethPhantasm from "./assets/images/a2104a50-30f3-4285-b90f-6c54b43f1972.jpg";
+import imgInsomniaTitan from "./assets/images/a44966bb-112c-4319-bfc3-44c14541aba7.jpg";
+import imgRemBoss from "./assets/images/b515a64c-8cc2-445c-9503-bf41a71c9902.jpg";
 
 // ── Responsive hook ──────────────────────────────────────────────────
 function useResponsive() {
@@ -914,7 +914,19 @@ function ScavengeGame({ luckBonus, onFinish }) {
 }
 
 // ── Battle Overlay ───────────────────────────────────────
-function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSkill, onFlee, setActiveModalInfo, onShowStats }) {
+function BattleOverlay({
+  game,
+  totalAtk,
+  totalMaxHp,
+  totalMaxMp,
+  onAttack,
+  onSkill,
+  onFlee,
+  setActiveModalInfo,
+  onShowStats,
+  playerActionEffect = "",
+  enemyActionEffect = ""
+}) {
   const resp = useResponsive();
   const { battle, player, upgrades = {} } = game;
   if (!battle || !battle.enemyQueue) return null;
@@ -929,6 +941,25 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
   const isFeral = battle.currentForm === "feral";
   const bondValue = game.bond || 0;
   const hasUltimate = bondValue >= 50;
+
+  // Floating vs Breathing calculations
+  const isFlying = ["fogling", "anxiety_wisp", "shade_wraith", "aeth_phantasm", "apnea", "phantasmagoria", "rem", "echo_dread", "somniphobia", "amigdala", "dream_eater", "shattered_reflection", "obsidian_spectre"].includes(enemy.id);
+  const enemyIdleClass = isFlying ? "animate-float" : "animate-breathing";
+  let enemyAnimClass = enemyIdleClass;
+  if (enemyActionEffect === "strike") {
+    enemyAnimClass = "animate-strike-enemy";
+  } else if (enemyActionEffect === "hit") {
+    enemyAnimClass = "animate-hit-enemy";
+  }
+
+  const playerIdleClass = (battle.currentForm === "hybrid") ? "animate-float" : "animate-breathing";
+  let playerAnimClass = playerIdleClass;
+  if (playerActionEffect === "strike") {
+    playerAnimClass = "animate-strike-player";
+  } else if (playerActionEffect === "hit") {
+    playerAnimClass = "animate-hit-player";
+  }
+
   const ultimateSkill = hasUltimate ? {
     id: isFeral ? "f_ult" : "h_ult",
     name: isFeral ? "🐾 Sovereign Claw" : "🌌 Cosmic Eclipse",
@@ -1007,12 +1038,12 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
       <div className="dg-arena" style={{ display:"grid", gridTemplateColumns: resp.isSmall ? "1fr 26px 1fr" : "1fr 50px 1fr", gap: resp.isSmall ? 5 : 8, maxWidth:680, margin:"0 auto", width:"100%", marginBottom: resp.isLandscapeMobile ? 8 : 12 }}>
         {/* Enemy */}
         <div style={{
-          background: enemy.isBoss ? "rgba(220,38,38,0.15)" : "rgba(220,38,38,0.07)",
-          border:"1px solid " + (enemy.isBoss ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.2)"),
-          borderRadius:18, padding:"12px 10px", textAlign:"center",
+          background: "transparent",
+          border: "none",
+          borderRadius: 18, padding: "12px 10px", textAlign: "center",
         }}>
           {enemy.img ? (
-            <div style={{
+            <div className={enemyAnimClass} style={{
               width: resp.isLandscapeMobile ? 120 : (enemy.isBoss ? 170 : 150),
               height: resp.isLandscapeMobile ? 120 : (enemy.isBoss ? 170 : 150),
               margin: "0 auto 10px auto",
@@ -1036,7 +1067,7 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
               />
             </div>
           ) : (
-            <div className="dg-char" style={{ fontSize: resp.isLandscapeMobile ? 34 : (enemy.isBoss ? 48 : 52), lineHeight:1, marginBottom:4 }}>{enemy.ico}</div>
+            <div className={`dg-char ${enemyAnimClass}`} style={{ fontSize: resp.isLandscapeMobile ? 34 : (enemy.isBoss ? 48 : 52), lineHeight:1, marginBottom:4, display: "inline-block" }}>{enemy.ico}</div>
           )}
           <div style={{ fontWeight:"bold", fontSize:14, color: "#fca5a5", marginBottom:2 }}>
             {enemy.name}
@@ -1106,8 +1137,8 @@ function BattleOverlay({ game, totalAtk, totalMaxHp, totalMaxMp, onAttack, onSki
         </div>
 
         {/* Luna */}
-        <div style={{ background:"rgba(109,40,217,0.08)", border:"1px solid rgba(139,92,246,0.25)", borderRadius:18, padding:"12px 10px", textAlign:"center" }}>
-          <div className="dg-char" style={{ fontSize: resp.isLandscapeMobile ? 34 : 52, lineHeight:1, marginBottom:4 }}>
+        <div style={{ background: "transparent", border: "none", borderRadius: 18, padding: "12px 10px", textAlign: "center" }}>
+          <div className={`dg-char ${playerAnimClass}`} style={{ fontSize: resp.isLandscapeMobile ? 34 : 52, lineHeight:1, marginBottom:4, display: "inline-block" }}>
             {battle.currentForm === "hybrid" ? "🔮" : "🐱"}
           </div>
           <div style={{ fontWeight:"bold", fontSize:14, color:"#c4b5fd", marginBottom:6 }}>
@@ -2194,6 +2225,8 @@ export default function DreamGuardian() {
   const [eqOpen, setEqOpen]             = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showKeeperModal, setShowKeeperModal] = useState(false);
+  const [playerActionEffect, setPlayerActionEffect] = useState(""); // "strike", "hit", or ""
+  const [enemyActionEffect, setEnemyActionEffect]   = useState(""); // "strike", "hit", or ""
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -3179,6 +3212,28 @@ export default function DreamGuardian() {
     const newEnemyHp = Math.max(0, enemy.hp - totalDamage);
     const isDeadFromReflect = (player.hp + vampHeal - finalReflect) <= 0;
 
+    // --- Combat Animations Sequence ---
+    setPlayerActionEffect("strike");
+    setTimeout(() => setPlayerActionEffect(""), 450);
+
+    setTimeout(() => {
+      setEnemyActionEffect("hit");
+    }, 120);
+    setTimeout(() => setEnemyActionEffect(""), 550);
+
+    if (newEnemyHp > 0) {
+      setTimeout(() => {
+        setEnemyActionEffect("strike");
+      }, 500);
+      setTimeout(() => setEnemyActionEffect(""), 950);
+
+      setTimeout(() => {
+        setPlayerActionEffect("hit");
+      }, 620);
+      setTimeout(() => setPlayerActionEffect(""), 1050);
+    }
+    // ----------------------------------
+
     const atkLog = [
       (isCrit ? "⚡ Critical! " : "") + 
       "Luna dealt " + totalDamage + " damage" +
@@ -3466,6 +3521,17 @@ export default function DreamGuardian() {
 
     const totalDamage = finalDmgInput + multiHitDamageTotal;
 
+    // --- Combat Animations Sequence ---
+    setPlayerActionEffect("strike");
+    setTimeout(() => setPlayerActionEffect(""), 450);
+
+    if (initialDmg > 0) {
+      setTimeout(() => {
+        setEnemyActionEffect("hit");
+      }, 120);
+      setTimeout(() => setEnemyActionEffect(""), 550);
+    }
+
     if (initialDmg > 0) {
       newEnemyHp -= totalDamage;
       if (skill.id === "f2") {
@@ -3490,6 +3556,19 @@ export default function DreamGuardian() {
         skillLog = `🌌 COSMIC ECLIPSE! (Supreme Affinity Ultimate: +${percentGrown}% bond power) deals ${totalDamage} cataclysmic damage!` + (finalReflect > 0 ? ` Recoil: Took ${finalReflect} reflection.` : "");
       }
     }
+
+    if (!skipEnemy && newEnemyHp > 0) {
+      setTimeout(() => {
+        setEnemyActionEffect("strike");
+      }, 500);
+      setTimeout(() => setEnemyActionEffect(""), 950);
+
+      setTimeout(() => {
+        setPlayerActionEffect("hit");
+      }, 620);
+      setTimeout(() => setPlayerActionEffect(""), 1050);
+    }
+    // ----------------------------------
 
     const isDeadFromRecoil = finalReflect > 0 && (player.hp + healAmount - finalReflect) <= 0;
 
@@ -5219,6 +5298,8 @@ export default function DreamGuardian() {
           onFlee={handleFleeBattle}
           setActiveModalInfo={setActiveModalInfo}
           onShowStats={() => setShowStatsModal(true)}
+          playerActionEffect={playerActionEffect}
+          enemyActionEffect={enemyActionEffect}
         />
       )}
 
